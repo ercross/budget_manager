@@ -25,26 +25,16 @@ class _ExpenseList extends State<ExpenseList> {
       stream: expenseBloc.stateStreamOutput,
       initialData: expenseBloc.expenses,
       builder: (BuildContext buildContext, AsyncSnapshot<List<Expense>> snapshot) {
-        return Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: expenseBloc.expenses.map((expense) {
-                  return ExpenseCard(expense);
-                }).toList() 
+        return Container(
+          height: 300,
+          child: ListView.builder(
+                  itemBuilder: (buildContext, index) {
+                    return ExpenseCard(snapshot.data[index]);
+                  },
+                  itemCount: snapshot.data.length,
+          ),
         );
       }
     );
   }
 }
-
-/*return BlocBuilder(
-              
-              builder: (BuildContext buildContext, ExpenseState expenseState) {
-                return Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: expenses.map((expense) {
-                  return ExpenseCard(expense);
-                }).toList()
-              );
-              }
-               
-    );*/
