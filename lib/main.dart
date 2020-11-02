@@ -24,14 +24,23 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
+  final HomePageBody homepageBody = new HomePageBody();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Flutter'),
+        actions: [IconButton(
+          icon: Icon(Icons.add), 
+          color: Colors.white,
+          onPressed: () {homepageBody.showInputFieldBoxes(context);})],
       ),
-      body: HomePageBody(),
+      body: homepageBody,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {homepageBody.showInputFieldBoxes(context);})
     );
   }
 }
@@ -46,11 +55,19 @@ class HomePageBody extends StatelessWidget {
           //mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             Chart(),
-            InputFields(_expenseBloc),
-            ExpenseList(expenseBloc: _expenseBloc)
+            //InputFields(_expenseBloc),
+            ExpenseList(expenseBloc: _expenseBloc),
           ],
         )
       );
+  }
+
+  void showInputFieldBoxes (BuildContext buildContext) {
+    showModalBottomSheet(
+      context: buildContext, 
+      builder: (_) {
+        return InputFields(_expenseBloc);
+      });
   }
 }
 
@@ -76,12 +93,19 @@ class Chart extends StatelessWidget {
   }
 }
 
-class InputFields extends StatelessWidget {
+class InputFields extends StatefulWidget {
   final ExpenseBloc expenseBloc;
-  final TextEditingController amountController = TextEditingController();
-  final TextEditingController titleController = TextEditingController();
 
   InputFields(this.expenseBloc);
+
+  @override
+  _InputFieldsState createState() => _InputFieldsState();
+}
+
+class _InputFieldsState extends State<InputFields> {
+  final TextEditingController amountController = TextEditingController();
+
+  final TextEditingController titleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -93,26 +117,43 @@ class InputFields extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
-                    TextField(autofocus: true, decoration: InputDecoration(labelText: "Title"), controller: titleController,),
-                    TextField(autofocus: true, decoration: InputDecoration(labelText: "Amount"), controller: amountController),
+                    TextField(
+                      autofocus: true, 
+                      decoration: InputDecoration(labelText: "Title"), 
+                      controller: titleController,
+                      onSubmitted: (inputValue) {titleController.text = inputValue;},),
+                    TextField(
+                      autofocus: true, 
+                      decoration: InputDecoration(labelText: "Amount"), 
+                      controller: amountController, 
+                      keyboardType: TextInputType.number,
+                      onSubmitted: (inputAmount) {amountController.text = inputAmount;},),
                     RaisedButton(
                       elevation: 8,
                       child: Text("Add Expense"),
                       textColor: Colors.purple,
-                      onPressed: () {
-                        expenseBloc.eventInput.add(AddExpense(
-                        Expense(
-                          title: titleController.text,
-                          amount: double.parse(amountController.text),
-                          date: DateTime.now(),
-                          id: 2,
-                        )
-                      ));
-                      },
+                      onPressed: addNewExpense,
                       )
                   ],
                 ),
               )
     );
+  }
+
+  void addNewExpense() {
+    final String title = titleController.text;
+    final double amount = double.parse(amountController.text);
+
+    if (title.isEmpty|| amount < 0) {
+      return;
+    }
+    widget.expenseBloc.eventInput.add(AddExpense(
+                        Expense(
+                          title: title,
+                          amount: amount,
+                          date: DateTime.now(),
+                          id: 2,
+                        )
+                      ));
   }
 }

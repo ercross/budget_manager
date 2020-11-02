@@ -23,7 +23,7 @@ class ExpenseCard extends StatelessWidget {
                         ),
                         padding: EdgeInsets.all(7),
                         child: Text(
-                          expense.amount.toString(),
+                          expense.amount.toStringAsFixed(2),
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
