@@ -2,7 +2,7 @@ import '../vanilla_bloc/expense_bloc.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_bloc/flutter_bloc.dart';
 import './expense_card.dart';
-import '../expense.dart';
+import '../models/expense.dart';
 
 class ExpenseList extends StatefulWidget {
   final ExpenseBloc expenseBloc;

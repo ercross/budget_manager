@@ -1,7 +1,9 @@
-import './vanilla_bloc/expense_bloc.dart';
 import 'package:flutter/material.dart';
+
+import './widgets/theme.dart';
+import './vanilla_bloc/expense_bloc.dart';
 import './widgets/expense_list.dart';
-import './expense.dart';
+import './models/expense.dart';
 import './vanilla_bloc/expense_event.dart';
 
 void main() => runApp(MyApp());
@@ -13,12 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'My play App',
       home: MyHomePage(),
-      theme: ThemeData(
-        //primaryColor: Color.fromRGBO(140, 54, 49, 0.8),
-        //accentColor: Color.fromRGBO(150, 64, 59, 0.9),
-        //brightness: Brightness.dark,
-        primarySwatch: Colors.blueGrey
-      ), 
+      theme: BudgetManagerTheme().makeTheme(),
     );
   }
 }
@@ -79,7 +76,7 @@ class Chart extends StatelessWidget {
               width: double.infinity,
               height: 100,
               decoration: BoxDecoration(
-                color: Color.fromRGBO(140, 54, 49, 0.8),
+                color: Theme.of(buildContext).primaryColor,
                 border:Border.symmetric(vertical: BorderSide(width: 2))
               ),
               padding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
@@ -155,5 +152,7 @@ class _InputFieldsState extends State<InputFields> {
                           id: 2,
                         )
                       ));
+
+    Navigator.of(context).pop();
   }
 }

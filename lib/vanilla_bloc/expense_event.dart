@@ -1,4 +1,4 @@
-import '../expense.dart';
+import '../models/expense.dart';
 
 abstract class ExpenseEvent {
   final Expense expense;

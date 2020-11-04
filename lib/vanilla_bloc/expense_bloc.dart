@@ -1,6 +1,6 @@
 import 'dart:async';
 import './expense_event.dart';
-import '../expense.dart';
+import '../models/expense.dart';
 
 class ExpenseBloc {
 

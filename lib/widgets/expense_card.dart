@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../expense.dart';
+import '../models/expense.dart';
 
 class ExpenseCard extends StatelessWidget {
   final Expense expense;
@@ -19,7 +19,7 @@ class ExpenseCard extends StatelessWidget {
                           vertical: 10
                         ) ,
                         decoration: BoxDecoration(
-                          border: Border.all(width: 3, color: Colors.purple),
+                          border: Border.all(width: 3, color: Theme.of(context).primaryColorLight),
                         ),
                         padding: EdgeInsets.all(7),
                         child: Text(
@@ -27,7 +27,7 @@ class ExpenseCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.purple
+                            //color: Colors.deepOrange
                           ),),
                         ),
                       Column(
