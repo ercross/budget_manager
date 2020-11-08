@@ -8,47 +8,50 @@ class ExpenseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-                  elevation: 5,
-                  child: Row(
-                    children: <Widget>[
-                      Container
-                      (
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 10
-                        ) ,
-                        decoration: BoxDecoration(
-                          border: Border.all(width: 3, color: Theme.of(context).primaryColorLight),
-                        ),
-                        padding: EdgeInsets.all(7),
-                        child: Text(
-                          expense.amount.toStringAsFixed(2),
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            //color: Colors.deepOrange
-                          ),),
-                        ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Text(expense.title, 
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+    final CircleAvatar expenseAmountWidget = CircleAvatar(
+      radius: 40,
+      backgroundColor: Theme.of(context).primaryColor,
+      child: Center(
+        child: Text(
+          expense.amount.toStringAsFixed(2),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white
+          ),
+        ),
+      ),
+    );
 
-                            ),
-                          ),
-                          Text(expense.date.toString(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.w300,
-                              fontSize: 14,
-                            ))
-                        ]
-                      )
-                    ],
-                  ),);
+    final Text expenseTitleWidget = Text(
+      expense.title,
+      style: TextStyle(
+          fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+    );
+
+    final Text expenseDateWidget = Text(expense.date.toString(),
+        style: TextStyle(
+            fontWeight: FontWeight.w300, fontSize: 14, color: Colors.black87));
+
+    return Card(
+      elevation: 4,
+      shape: Border.all(
+          width: 1,
+          color: Theme.of(context).primaryColor,
+          style: BorderStyle.solid),
+      shadowColor: Theme.of(context).primaryColor,
+      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 5),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        enabled: true,
+        leading: expenseAmountWidget,
+        title: expenseTitleWidget,
+        subtitle: expenseDateWidget,
+        trailing: IconButton(
+            icon: Icon(Icons.delete),
+            color: Colors.deepOrange,
+            onPressed: () {}),
+      ),
+    );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class BudgetManagerTheme {
 
-  static const Map<int, Color> shades = {
+  static const Map<int, Color> _shades = {
     50: Color.fromRGBO(171, 39, 79, 0.1),
     100: Color.fromRGBO(171, 39, 79, 0.2),
     200: Color.fromRGBO(171, 39, 79, 0.3),
@@ -15,17 +15,20 @@ class BudgetManagerTheme {
     900: Color.fromRGBO(171, 39, 79, 0.9)
   };
 
-  static const MaterialColor primarySwatch = MaterialColor(0xFFAB274F, shades);
+  static const MaterialColor _primarySwatch = MaterialColor(0xFFAB274F, _shades);
 
   ThemeData makeTheme () {
     return ThemeData(
-      primarySwatch: primarySwatch,
-        textTheme: TextTheme(
-          bodyText1: TextStyle(
+      primarySwatch: _primarySwatch,
+      accentColor: Colors.deepOrange,
+        textTheme: ThemeData.light().textTheme.copyWith(
+          bodyText2: TextStyle(
             color: Colors.deepOrange,
-            fontFamily: 'Quicksand',
+            fontSize: 16,
+            fontFamily: 'OpenSans'
           )
-        )
+        ),
+        
     );
   }
 }

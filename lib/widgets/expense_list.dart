@@ -18,20 +18,17 @@ class _ExpenseList extends State<ExpenseList> {
   @override
   Widget build(BuildContext context) {
     
-    return Container(
-      height: 300,
-      child: StreamBuilder(
-        stream: widget.expenseBloc.stateStreamOutput,
-        initialData: widget.expenseBloc.expenses,
-        builder: (BuildContext buildContext, AsyncSnapshot<List<Expense>> snapshot) {
-            return ListView.builder(
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (buildContext, index) {
-                      return ExpenseCard(snapshot.data[index]);
-                    },
-            );
-        }
-      ),
+    return StreamBuilder(
+      stream: widget.expenseBloc.stateStreamOutput,
+      initialData: widget.expenseBloc.expenses,
+      builder: (BuildContext buildContext, AsyncSnapshot<List<Expense>> snapshot) {
+          return ListView.builder(
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (buildContext, index) {
+                    return ExpenseCard(snapshot.data[index]);
+                  },
+          );
+      }
     );
   }
 }

@@ -6,7 +6,10 @@ class ExpenseBloc {
 
   List<Expense> _expenses = [
       new Expense(id: 1, amount: 20, date: DateTime.now(), title: "trip to Lagos"),
-      new Expense(id: 2, amount: 30, date: DateTime.now(), title: "Feeding today")
+      new Expense(id: 2, amount: 30, date: DateTime.now(), title: "Feeding today"),
+      new Expense(id: 3, amount: 250, date: DateTime.now(), title: "Yahoo ni Babalawo"),
+      new Expense(id: 4, amount: 20, date: DateTime.now(), title: "Mafo"),
+      new Expense(id: 5, amount: 5000, date: DateTime.now(), title: "End Sars"),
       ];
 
   List<Expense> get expenses => _expenses;
