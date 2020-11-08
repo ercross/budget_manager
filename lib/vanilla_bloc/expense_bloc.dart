@@ -4,7 +4,7 @@ import '../models/expense.dart';
 
 class ExpenseBloc {
 
-  List<Expense> _expenses = [
+  List<Expense> expenses = [
       new Expense(id: 1, amount: 20, date: DateTime.now(), title: "trip to Lagos"),
       new Expense(id: 2, amount: 30, date: DateTime.now(), title: "Feeding today"),
       new Expense(id: 3, amount: 250, date: DateTime.now(), title: "Yahoo ni Babalawo"),
@@ -12,7 +12,7 @@ class ExpenseBloc {
       new Expense(id: 5, amount: 5000, date: DateTime.now(), title: "End Sars"),
       ];
 
-  List<Expense> get expenses => _expenses;
+  //List<Expense> get expenses => expenses;
 
   final StreamController<List<Expense>> _stateStreamController = new StreamController<List<Expense>>();
 
@@ -29,12 +29,12 @@ class ExpenseBloc {
 
   void _mapEventToState (ExpenseEvent expenseEvent) {
     if (expenseEvent is AddExpense) {
-      AddExpense(expenseEvent.expense).addExpense(_expenses);
+      AddExpense(expenseEvent.expense).addExpense(expenses);
     }
     if (expenseEvent is DeleteExpense) {
-      DeleteExpense(expenseEvent.expense).deleteExpense(_expenses);
+      DeleteExpense(expenseEvent.expense).deleteExpense(expenses);
     }
-    _stateStreamInput.add(_expenses);
+    _stateStreamInput.add(expenses);
   }
 
   void dispose() {

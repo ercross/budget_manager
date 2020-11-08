@@ -23,16 +23,11 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
-
   
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData mediaQuery = MediaQuery.of(context);
-    final double statusBarHeight = mediaQuery.padding.top;
-    final double appBarHeight = AppBar().preferredSize.height;
-    final double displayAreaHeight =
-        mediaQuery.size.height - statusBarHeight - appBarHeight;
-    final HomePageBody _homepageBody = new HomePageBody(displayAreaHeight);
+
+    final HomePageBody _homepageBody = new HomePageBody();
 
     return Scaffold(
         appBar: AppBar(
@@ -59,24 +54,28 @@ class MyHomePage extends StatelessWidget {
 
 class HomePageBody extends StatelessWidget {
   final ExpenseBloc _expenseBloc = ExpenseBloc();
-  final double displayAreaHeight;
 
-  HomePageBody(this.displayAreaHeight);
+  HomePageBody();
 
   @override
   Widget build(BuildContext context) {
+
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
+    final double statusBarHeight = mediaQuery.padding.top;
+    final double appBarHeight = AppBar().preferredSize.height;
+    final double displayAreaHeight = mediaQuery.size.height - statusBarHeight - appBarHeight;
+    
     return SafeArea(
-      child: Column(
-        children: <Widget>[
+      child: Column(children: <Widget>[
         Container(
-            height: displayAreaHeight * 0.35, 
+            height: displayAreaHeight * 0.35,
             child: ExpenseManagerBarChart(displayAreaHeight)),
         Expanded(
-                  child: Container(
-            height: displayAreaHeight * 0.7,
-            child: ExpenseList(expenseBloc: _expenseBloc)),
-        ),]     
-      ),
+          child: Container(
+              height: displayAreaHeight * 0.7,
+              child: ExpenseList(expenseBloc: _expenseBloc)),
+        ),
+      ]),
     );
   }
 
@@ -84,7 +83,7 @@ class HomePageBody extends StatelessWidget {
     showModalBottomSheet(
         context: buildContext,
         builder: (_) {
-          return InputFields(_expenseBloc);
+          return SingleChildScrollView (child: InputFields(_expenseBloc));
         });
   }
 }
@@ -99,47 +98,49 @@ class InputFields extends StatefulWidget {
 }
 
 class _InputFieldsState extends State<InputFields> {
-  final TextEditingController amountController = TextEditingController();
 
+  final TextEditingController amountController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        margin: EdgeInsets.symmetric(vertical: 10),
-        elevation: 5,
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          //padding: EdgeInsetsDirectional.only(bottom: MediaQuery.of(context).viewInsets.bottom + 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(labelText: "Title"),
-                controller: titleController,
-                onSubmitted: (inputValue) {
-                  titleController.text = inputValue;
-                },
-              ),
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(labelText: "Amount"),
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                onSubmitted: (inputAmount) {
-                  amountController.text = inputAmount;
-                },
-              ),
-              RaisedButton(
-                elevation: 8,
-                child: Text("Add Expense"),
-                textColor: Colors.purple,
-                onPressed: addNewExpense,
-              )
-            ],
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: EdgeInsetsDirectional.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 10, top: 10, start: 10, end: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          TextField(
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: "Title", 
+              labelStyle: TextStyle(
+                fontWeight: FontWeight.bold)
+                ),
+            controller: titleController,
+            onSubmitted: (inputValue) {
+              titleController.text = inputValue;
+            },
           ),
-        ));
+          TextField(
+            autofocus: true,
+            decoration: InputDecoration(labelText: "Amount"),
+            controller: amountController,
+            keyboardType: TextInputType.number,
+            onSubmitted: (inputAmount) {
+              amountController.text = inputAmount;
+            },
+          ),
+          RaisedButton(
+            elevation: 8,
+            child: Text("Add Expense"),
+            textColor: Colors.purple,
+            onPressed: addNewExpense,
+          )
+        ],
+      ),
+    );
   }
 
   void addNewExpense() {
@@ -149,13 +150,13 @@ class _InputFieldsState extends State<InputFields> {
     if (title.isEmpty || amount < 0) {
       return;
     }
-    widget.expenseBloc.eventInput.add(AddExpense(Expense(
+    widget.expenseBloc.eventInput.add(AddExpense(new Expense(
       title: title,
       amount: amount,
       date: DateTime.now(),
       id: 2,
     )));
-
+    
     Navigator.of(context).pop();
   }
 }
