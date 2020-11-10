@@ -4,15 +4,15 @@ import '../models/expense.dart';
 
 class ExpenseBloc {
 
-  List<Expense> expenses = [
-      new Expense(id: 1, amount: 20, date: DateTime.now(), title: "trip to Lagos"),
+  List<Expense> _expenses = [
+      new Expense(id: 1, amount: 40, date: DateTime.now(), title: "trip to Lagos"),
       new Expense(id: 2, amount: 30, date: DateTime.now(), title: "Feeding today"),
       new Expense(id: 3, amount: 250, date: DateTime.now(), title: "Yahoo ni Babalawo"),
       new Expense(id: 4, amount: 20, date: DateTime.now(), title: "Mafo"),
-      new Expense(id: 5, amount: 5000, date: DateTime.now(), title: "End Sars"),
+      new Expense(id: 5, amount: 500, date: DateTime.now(), title: "End Sars"),
       ];
 
-  //List<Expense> get expenses => expenses;
+  List<Expense> get expenses => _expenses;
 
   final StreamController<List<Expense>> _stateStreamController = new StreamController<List<Expense>>();
 

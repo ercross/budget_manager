@@ -15,20 +15,30 @@ class ExpenseList extends StatefulWidget {
 
 class _ExpenseList extends State<ExpenseList> {
 
+  final Center noExpensesAdded = const Center(
+      child: Text("No Expenses Added Yet", style: TextStyle(
+        fontSize: 20,
+        color: Color.fromRGBO(171, 39, 79, 0.4),
+        fontWeight: FontWeight.bold
+      ),),
+    );
+
   @override
   Widget build(BuildContext context) {
-    
     return StreamBuilder(
-      stream: widget.expenseBloc.stateStreamOutput,
-      initialData: widget.expenseBloc.expenses,
-      builder: (BuildContext buildContext, AsyncSnapshot<List<Expense>> snapshot) {
+        stream: widget.expenseBloc.stateStreamOutput,
+        initialData: widget.expenseBloc.expenses,
+        builder: (BuildContext buildContext, AsyncSnapshot<List<Expense>> snapshot) {
+
+          if (widget.expenseBloc.expenses.isEmpty) { 
+            return noExpensesAdded;
+            }
           return ListView.builder(
-                  itemCount: snapshot.data.length,
-                  itemBuilder: (buildContext, index) {
-                    return ExpenseCard(snapshot.data[index]);
-                  },
+            itemCount: snapshot.data.length,
+            itemBuilder: (buildContext, index) {
+              return ExpenseCard(snapshot.data[index], widget.expenseBloc);
+            },
           );
-      }
-    );
+        });
   }
 }

@@ -1,0 +1,11 @@
+Create a central theme for textStyle in the theme class
+Show touchData in the chart
+Let chart data be loaded dynamically, not hardcoded
+Enable user load chart data by date range not more than seven days
+Persist expenses
+New expense list should be generated daily
+Show data inside the total container
+Build UI for portrait mode
+Build UI for iOS platform
+Get rid of inactive inputConnection error
+Enable users select currency

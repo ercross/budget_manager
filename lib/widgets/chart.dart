@@ -1,16 +1,22 @@
+import 'package:budget_manager/vanilla_bloc/expense_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../models/expense.dart';
+
+
 class ExpenseManagerBarChart extends StatefulWidget {
   final double availableSpace;
+  final List<Expense> expenses;
 
-  ExpenseManagerBarChart(this.availableSpace);
+  ExpenseManagerBarChart(this.availableSpace, this.expenses);
 
   @override
   _ChartState createState() => _ChartState();
 }
 
 class _ChartState extends State<ExpenseManagerBarChart> {
+
   ///made static const and class variable for performance gain
   ///as static const properties always return the same instance
   static const Text chartTitle = const Text(
@@ -26,8 +32,9 @@ class _ChartState extends State<ExpenseManagerBarChart> {
   @override
   Widget build(BuildContext context) {
     final BarChart expenseBarChart = makeExpenseBarChart();
-
-    final Column totalAmountData =
+    final String totalExpenses = calculateTotalExpenses().toString();
+    
+    final Column totalAmountWidget =
         Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Align(
         alignment: Alignment.centerLeft,
@@ -47,6 +54,8 @@ class _ChartState extends State<ExpenseManagerBarChart> {
             border: Border.all(color: Colors.white),
             color: Colors.white,
           ),
+          child: FittedBox(
+            child: Text('\$$totalExpenses', style: TextStyle(fontWeight: FontWeight.bold),)),
         ),
       )
     ]);
@@ -54,7 +63,7 @@ class _ChartState extends State<ExpenseManagerBarChart> {
     final Row chartInfo = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: totalAmountData),
+        Expanded(child: totalAmountWidget),
         expenseBarChart,
       ],
     );
@@ -96,7 +105,6 @@ class _ChartState extends State<ExpenseManagerBarChart> {
           barGroups: barGroups,
           //  barTouchData: setBarTouchData(),
           titlesData: setTitleData(),
-          //  axisTitleData: setAxisTitleData(),
         ),
         swapAnimationDuration: animationDuration);
   }
@@ -108,26 +116,7 @@ class _ChartState extends State<ExpenseManagerBarChart> {
   FlTitlesData setTitleData() {
     return FlTitlesData(
         show: true,
-        leftTitles: SideTitles(
-          reservedSize: 14,
-          margin: 30,
-          showTitles: false,
-          interval: 50,
-          getTextStyles: (value) => const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 0:
-                return "0%";
-              case 50:
-                return "50%";
-              case 100:
-                return "100%";
-              default:
-                return "F";
-            }
-          },
-        ),
+        leftTitles: SideTitles(showTitles: false),
         bottomTitles: SideTitles(
             showTitles: true,
             margin: 20,
@@ -153,10 +142,6 @@ class _ChartState extends State<ExpenseManagerBarChart> {
             }));
   }
 
-  /*FlAxisTitleData setAxisTitleData () {
-
-  } */
-
   static BarChartGroupData makeBarRodData(int xAxisValue, double yAxisValue) {
     return BarChartGroupData(x: xAxisValue, barRods: [
       BarChartRodData(
@@ -178,4 +163,10 @@ class _ChartState extends State<ExpenseManagerBarChart> {
     makeBarRodData(5, 19),
     makeBarRodData(6, 10),
   ];
+
+  static double calculateTotalExpenses () {
+    double totalExpenses = 0;
+    ExpenseBloc().expenses.forEach((expense) {totalExpenses += expense.amount;});
+    return totalExpenses;
+  }
 }
