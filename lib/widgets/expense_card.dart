@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../vanilla_bloc/expense_bloc.dart';
 import '../models/expense.dart';
-import '../vanilla_bloc/expense_event.dart';
 
 class ExpenseCard extends StatelessWidget {
   final Expense expense;
-  final ExpenseBloc expenseBloc;
+  final Function (Expense expense) deleteExpense ;
 
-  ExpenseCard(this.expense, this.expenseBloc);
+  ExpenseCard(this.expense, this.deleteExpense);
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +53,8 @@ class ExpenseCard extends StatelessWidget {
         trailing: IconButton(
             icon: Icon(Icons.delete),
             color: Colors.deepOrange,
-            onPressed: deleteExpense),
+            onPressed: () => deleteExpense(expense)),
       ),
     );
-  }
-
-  void deleteExpense() {
-    expenseBloc.eventInput.add(DeleteExpense(this.expense));
   }
 }

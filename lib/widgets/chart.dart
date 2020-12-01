@@ -1,15 +1,11 @@
-import 'package:budget_manager/vanilla_bloc/expense_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-
-import '../models/expense.dart';
 
 
 class ExpenseManagerBarChart extends StatefulWidget {
   final double availableSpace;
-  final List<Expense> expenses;
 
-  ExpenseManagerBarChart(this.availableSpace, this.expenses);
+  ExpenseManagerBarChart(this.availableSpace);
 
   @override
   _ChartState createState() => _ChartState();
@@ -166,7 +162,7 @@ class _ChartState extends State<ExpenseManagerBarChart> {
 
   static double calculateTotalExpenses () {
     double totalExpenses = 0;
-    ExpenseBloc().expenses.forEach((expense) {totalExpenses += expense.amount;});
+    //ExpenseBloc().expenses.forEach((expense) {totalExpenses += expense.amount;});
     return totalExpenses;
   }
 }

@@ -1,10 +1,10 @@
+import 'package:budget_manager/widgets/expense_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
+import '../bloc/expense_bloc.dart';
 import '../models/expense.dart';
-import '../vanilla_bloc/expense_event.dart';
-import '../vanilla_bloc/expense_bloc.dart';
 
 class InputFields extends StatefulWidget {
   final ExpenseBloc expenseBloc;
@@ -77,26 +77,24 @@ class _InputFieldsState extends State<InputFields> {
                   elevation: 8,
                   child: Text("Add Expense"),
                   textColor: Theme.of(context).primaryColor,
-                  onPressed: addNewExpense,
+                  onPressed: () => addNewExpense(context),
                 ),
               )
             ]));
   }
 
-  void addNewExpense() {
+  void addNewExpense(BuildContext context) {
     final String title = _titleController.text;
     final double amount = double.parse(_amountController.text);
-
+    
     if (title.isEmpty || amount < 0) {
       return;
     }
-    widget.expenseBloc.eventInput.add(AddExpense(new Expense(
+    /*BlocProvider.of<ExpenseCubit>(context)*/widget.expenseBloc.add(AddExpense (new Expense(
       title: title,
       amount: amount,
       date: _selectedDate,
-      id: 2,
     )));
-
     Navigator.of(context).pop();
   }
 
