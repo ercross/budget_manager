@@ -1,11 +1,12 @@
-Create a central theme for textStyle in the theme class
+Guide against all potential NullPointerException
+Format expense amount as String but should be double at input point
 Show touchData in the chart
-Let chart data be loaded dynamically, not hardcoded
-Enable user load chart data by date range not more than seven days
-Persist expenses
 New expense list should be generated daily
-Show data inside the total container
 Build UI for portrait mode
 Build UI for iOS platform
 Get rid of inactive inputConnection error
 Enable users select currency
+If user choose to load a seven-day expense into chart, then each day expense list should be viewable by swiping right or clicking on a next day button or a previous day button
+Option for user to show list of expenses for a particular day
+For each daily expense list, option to sort expense based on price or time of entry(just use id for this)
+Allow for user to enter budgets, e.g., dailyBudget, WeeklyBudgets, MonthlyBudget. Then based on this, users should be able to generate reports (daily, weekly, monthly) where each report highlights most expensive item bought, day with the most expenses, if budget is less/greater than expense.

@@ -1,10 +1,9 @@
 import 'package:budget_manager/repository/database_provider.dart';
-import 'package:budget_manager/repository/repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 import '../models/expense.dart';
-import '../bloc/expense_bloc.dart';
+import '../bloc/expense/expense_bloc.dart';
 import './expense_card.dart';
 
 class ExpenseList extends StatefulWidget {
@@ -20,7 +19,6 @@ class ExpenseList extends StatefulWidget {
 class _ExpenseList extends State<ExpenseList> {
 
   @override
-  @override
   void initState() { 
     super.initState();
     DatabaseProvider.databaseProvider.getAll(ExpenseTable.tableName)
@@ -32,7 +30,6 @@ class _ExpenseList extends State<ExpenseList> {
 
   @override
   Widget build(BuildContext context) {
-    print("building new ExpenseList");
     return buildExpenseList();  
   }
 
@@ -85,6 +82,5 @@ class _ExpenseList extends State<ExpenseList> {
       widget.expenses.remove(expense);
     });
     BlocProvider.of<ExpenseBloc>(context).add(DeleteExpense(expense.id));
-    DatabaseProvider.databaseProvider.delete(tableName: ExpenseTable.tableName, where: "id=?", targetValues: [expense.id]);
   }
 }

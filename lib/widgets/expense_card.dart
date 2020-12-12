@@ -11,9 +11,16 @@ class ExpenseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CircleAvatar expenseAmountWidget = CircleAvatar(
-      radius: 40,
-      backgroundColor: Theme.of(context).primaryColor,
+    
+    final Container expenseAmountWidgetSquare = Container(
+      height: 100,
+      width: 80,
+      margin: EdgeInsets.only(left: 5),
+      padding: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+        color: Theme.of(context).primaryColor,  
+      ),
       child: Center(
         child: Text(
           expense.amount.toStringAsFixed(2),
@@ -32,7 +39,7 @@ class ExpenseCard extends StatelessWidget {
           fontWeight: FontWeight.bold, fontSize: 17, color: Colors.black),
     );
 
-    final Text expenseDateWidget = Text(DateFormat("EEE, dd-M-yyyy").format(expense.date),
+    final Text expenseDateWidget = Text(DateFormat('EEE, MMM d, yyyy').format(expense.date),
         style: TextStyle(
             fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black87));
 
@@ -47,7 +54,7 @@ class ExpenseCard extends StatelessWidget {
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
         enabled: true,
-        leading: expenseAmountWidget,
+        leading: expenseAmountWidgetSquare,
         title: expenseTitleWidget,
         subtitle: expenseDateWidget,
         trailing: IconButton(

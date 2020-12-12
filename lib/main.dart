@@ -1,13 +1,15 @@
-import 'package:budget_manager/bloc_observer.dart';
-import 'package:budget_manager/repository/database_provider.dart';
-import 'package:budget_manager/repository/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import './theme.dart';
-import './widgets/chart.dart';
-import './widgets/expense_list.dart';
-import './bloc/expense_bloc.dart';
+import 'bloc_observer.dart';
+import 'bloc/expense/expense_bloc.dart';
+import 'bloc/chart/chart_bloc.dart';
+import 'models/chart_data_date_range.dart';
+import 'repository/database_provider.dart';
+import 'theme.dart';
+import 'widgets/main_drawer.dart';
+import 'widgets/chart.dart';
+import 'widgets/expense_list.dart';
 import 'widgets/input_form.dart';
 
 
@@ -21,8 +23,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Expense Manager',
-      home: BlocProvider(
-        create: (context) => ExpenseBloc(DatabaseProvider.databaseProvider),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider<ExpenseBloc> (
+            create: (context) => ExpenseBloc(DatabaseProvider.databaseProvider)
+          ),
+          BlocProvider<ChartBloc> (
+            create: (context) => ChartBloc())
+        ],
         child: MyHomePage(),
       ),
       theme: BudgetManagerTheme().makeTheme(),
@@ -58,6 +66,7 @@ class MyHomePage extends StatelessWidget {
         ],
       ),
       body: _homepageBody,
+        drawer: MainDrawer(),
     );
   }
 
@@ -84,7 +93,10 @@ class HomePageBody extends StatelessWidget {
       child: Column(children: <Widget>[
         Container(
             height: displayAreaHeight * 0.35,
-            child: ExpenseManagerBarChart(displayAreaHeight)),
+            child: ExpenseManagerBarChart(displayAreaHeight, ChartDataDateRange(
+              fromDate: DateTime.now().subtract( Duration(days: 6) ),
+              toDate: DateTime.now()
+            ) )),
         Expanded(
           child: Container(
               height: displayAreaHeight * 0.7, child: ExpenseList()),

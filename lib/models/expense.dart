@@ -1,6 +1,8 @@
-import '../repository/database_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
+
+import '../repository/database_provider.dart';
 
 class Expense extends Equatable{
   final int id;
@@ -13,7 +15,7 @@ class Expense extends Equatable{
     @required this.title,
     @required this.amount,
     @required this.date
-  });
+  }) ;
 
   @override
   List<Object> get props => [id, title, amount, date];
@@ -28,7 +30,7 @@ class Expense extends Equatable{
     var map = <String, dynamic> {
       ExpenseTable.columnAmount: amount,
       ExpenseTable.columnTitle: title,
-      ExpenseTable.columnDate: date.toString(),
+      ExpenseTable.columnDate: DateFormat('EEEE, yMMMMd').format(date),
     };
     if ( id != null) {
       map[ExpenseTable.columnId] = id;

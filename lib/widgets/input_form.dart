@@ -1,9 +1,8 @@
-import 'package:budget_manager/widgets/expense_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
-import '../bloc/expense_bloc.dart';
+import '../bloc/expense/expense_bloc.dart';
 import '../models/expense.dart';
 
 class InputFields extends StatefulWidget {
