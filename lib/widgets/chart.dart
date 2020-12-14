@@ -146,24 +146,21 @@ class _ChartState extends State<ExpenseManagerBarChart> {
         swapAnimationDuration: animationDuration);
   }
 
-  //todo show date, totalAmount of expense for that date, and the percentage
   BarTouchData _setBarTouchData () {
     return BarTouchData(
       handleBuiltInTouches: true,
       touchTooltipData: BarTouchTooltipData(
         fitInsideHorizontally: true,
-        // tooltipPadding: EdgeInsets.all(3),
-        // tooltipRoundedRadius: 5,
         fitInsideVertically: true,
         tooltipBgColor: Color.fromRGBO(171, 39, 79, 0.2),
         getTooltipItem: (BarChartGroupData group, int groupindex, BarChartRodData rod, int rodIndex) {
-          final double totalAmount = rod.y;
+          final double totalAmount = chartData.dailyExpensesTotal[group.x];
           final String date = DateFormat.yMMMMd('en_US').format(chartData.dates[group.x]);
 
           //return 0 is either divisor or dividend is zero
-          final double percentage = chartData.totalAmount == 0 || totalAmount == 0 ? 0 : ((totalAmount/100)*chartData.totalAmount);
-           return BarTooltipItem( "$date \n amount spent: $totalAmount \n %: $percentage%"
-                        , TextStyle(color: Colors.white));
+          final double percentage = chartData.percentageSpentPerDay[group.x];
+           return BarTooltipItem( "$date \n amount spent: $totalAmount \n % of total amount: $percentage%"
+                        , TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
       }),
     );
   } 
@@ -211,13 +208,13 @@ class _ChartState extends State<ExpenseManagerBarChart> {
 
   List<BarChartGroupData> _makeBarGroups() {
     return [
-      _makeAbarRod(0, chartData.dailyExpensesTotal[0] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
-      _makeAbarRod(1, chartData.dailyExpensesTotal[1] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
-      _makeAbarRod(2, chartData.dailyExpensesTotal[2] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
-      _makeAbarRod(3, chartData.dailyExpensesTotal[3] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
-      _makeAbarRod(4, chartData.dailyExpensesTotal[4] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
-      _makeAbarRod(5, chartData.dailyExpensesTotal[5] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
-      _makeAbarRod(6, chartData.dailyExpensesTotal[6] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(0, chartData.percentageSpentPerDay[0] ?? 0),
+      _makeAbarRod(1, chartData.percentageSpentPerDay[1] ?? 0),
+      _makeAbarRod(2, chartData.percentageSpentPerDay[2] ?? 0),
+      _makeAbarRod(3, chartData.percentageSpentPerDay[3] ?? 0),
+      _makeAbarRod(4, chartData.percentageSpentPerDay[4] ?? 0),
+      _makeAbarRod(5, chartData.percentageSpentPerDay[5] ?? 0),
+      _makeAbarRod(6, chartData.percentageSpentPerDay[6] ?? 0),
     ];
   }
 }
