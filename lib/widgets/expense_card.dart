@@ -39,7 +39,7 @@ class ExpenseCard extends StatelessWidget {
           fontWeight: FontWeight.bold, fontSize: 17, color: Colors.black),
     );
 
-    final Text expenseDateWidget = Text(DateFormat('EEE, MMM d, yyyy').format(expense.date),
+    final Text expenseDateWidget = Text(DateFormat('EEE MMM d, yyyy').format(expense.date),
         style: TextStyle(
             fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black87));
 

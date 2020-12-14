@@ -24,17 +24,22 @@ class Expense extends Equatable{
     id = map[ExpenseTable.columnId],
     title = map[ExpenseTable.columnTitle],
     amount = map[ExpenseTable.columnAmount],
-    date = DateTime.parse(map[ExpenseTable.columnDate]);
+    date = DateTime.fromMillisecondsSinceEpoch((map[ExpenseTable.columnDate]));
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic> {
       ExpenseTable.columnAmount: amount,
       ExpenseTable.columnTitle: title,
-      ExpenseTable.columnDate: DateFormat('EEEE, yMMMMd').format(date),
+      ExpenseTable.columnDate: DateTime(date.year, date.month, date.day).millisecondsSinceEpoch,
     };
     if ( id != null) {
       map[ExpenseTable.columnId] = id;
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return "id: $id \n title: $title \n amount: $amount \n date: ${date.toString()}";
   }
 }

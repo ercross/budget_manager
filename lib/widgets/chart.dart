@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 import '../bloc/chart/chart_bloc.dart';
 import '../bloc/chart/chart_event.dart';
@@ -139,17 +140,35 @@ class _ChartState extends State<ExpenseManagerBarChart> {
           borderData: FlBorderData(show: false),
           maxY: 100,
           barGroups: _makeBarGroups(),
-          //  barTouchData: setBarTouchData(),
-          titlesData: setTitleData(),
+          barTouchData: _setBarTouchData(),
+          titlesData: _setTitleData(),
         ),
         swapAnimationDuration: animationDuration);
   }
 
-  /*BarTouchData setBarTouchData () {
+  //todo show date, totalAmount of expense for that date, and the percentage
+  BarTouchData _setBarTouchData () {
+    return BarTouchData(
+      handleBuiltInTouches: true,
+      touchTooltipData: BarTouchTooltipData(
+        fitInsideHorizontally: true,
+        // tooltipPadding: EdgeInsets.all(3),
+        // tooltipRoundedRadius: 5,
+        fitInsideVertically: true,
+        tooltipBgColor: Color.fromRGBO(171, 39, 79, 0.2),
+        getTooltipItem: (BarChartGroupData group, int groupindex, BarChartRodData rod, int rodIndex) {
+          final double totalAmount = rod.y;
+          final String date = DateFormat.yMMMMd('en_US').format(chartData.dates[group.x]);
 
-  } */
+          //return 0 is either divisor or dividend is zero
+          final double percentage = chartData.totalAmount == 0 || totalAmount == 0 ? 0 : ((totalAmount/100)*chartData.totalAmount);
+           return BarTooltipItem( "$date \n amount spent: $totalAmount \n %: $percentage%"
+                        , TextStyle(color: Colors.white));
+      }),
+    );
+  } 
 
-  FlTitlesData setTitleData() {
+  FlTitlesData _setTitleData() {
     return FlTitlesData(
         show: true,
         leftTitles: SideTitles(showTitles: false),
@@ -178,8 +197,8 @@ class _ChartState extends State<ExpenseManagerBarChart> {
             }));
   }
 
-  BarChartGroupData _makeAbarRod (int xAxisValue, double yAxisValue) {
-    return BarChartGroupData(x: xAxisValue, barRods: [
+  BarChartGroupData _makeAbarRod (int xAxisPosition, double yAxisValue) {
+    return BarChartGroupData(x: xAxisPosition, barRods: [
       BarChartRodData(
         y: yAxisValue,
         colors: [Colors.grey],
@@ -192,13 +211,13 @@ class _ChartState extends State<ExpenseManagerBarChart> {
 
   List<BarChartGroupData> _makeBarGroups() {
     return [
-      _makeAbarRod(0, chartData.dailyExpensesTotal[0] ?? 0),
-      _makeAbarRod(1, chartData.dailyExpensesTotal[1] ?? 0),
-      _makeAbarRod(2, chartData.dailyExpensesTotal[2] ?? 0),
-      _makeAbarRod(3, chartData.dailyExpensesTotal[3] ?? 0),
-      _makeAbarRod(4, chartData.dailyExpensesTotal[4] ?? 0),
-      _makeAbarRod(5, chartData.dailyExpensesTotal[5] ?? 0),
-      _makeAbarRod(6, chartData.dailyExpensesTotal[6] ?? 0),
+      _makeAbarRod(0, chartData.dailyExpensesTotal[0] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(1, chartData.dailyExpensesTotal[1] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(2, chartData.dailyExpensesTotal[2] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(3, chartData.dailyExpensesTotal[3] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(4, chartData.dailyExpensesTotal[4] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(5, chartData.dailyExpensesTotal[5] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
+      _makeAbarRod(6, chartData.dailyExpensesTotal[6] == null ? 20 : chartData.dailyExpensesTotal[0]/100),
     ];
   }
 }

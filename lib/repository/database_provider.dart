@@ -14,7 +14,7 @@ class ExpenseTable {
   static const String columnTitle = "title";
 
   static FutureOr<void> create (Database database, int version) async {
-    await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, $columnTitle TEXT, $columnAmount REAL, $columnDate TEXT)');
+    await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, $columnTitle TEXT, $columnAmount REAL, $columnDate INTEGER)');
   }
 }
 
@@ -75,13 +75,13 @@ class DatabaseProvider {
 
   ///whereArgs is a list of occurrence to find on each row
   ///where shoul be formatted like so where: "id=?" if the search is to be done by id 
-  Future<List<List<Expense>>> batchGet (String tableName, String where, List<dynamic> whereArgs) async {
+  Future<List<List<Expense>>> batchGet (String tableName, String where, List<DateTime> whereArgs) async {
     final Database db = await _getDatabaseDriver();
     final Batch batch = db.batch();
     List<List<Expense>> expenses = List<List<Expense>>();
     List<Expense> dailyExpense = List<Expense>();
     for (int i=0; i<whereArgs.length; i++) {
-      batch.query(tableName, where: where, whereArgs: [whereArgs[i]]);
+      batch.query(tableName, where: where, whereArgs: [whereArgs[i].millisecondsSinceEpoch]);
     }
     final maps = (await batch.commit(noResult: false)).cast<List<Map<String, dynamic>>>();
     for(int i=0; i<maps.length; i++) {
