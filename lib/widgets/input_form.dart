@@ -98,7 +98,7 @@ class _InputFieldsState extends State<InputFields> {
       amount: amount,
       date: _selectedDate,
     )));
-    widget.chartBloc.add( AddNewExpenseToChart (new Expense(
+    widget.chartBloc.add( AddOrRemoveExpenseFromChart (new Expense(
       title: title,
       amount: amount,
       date: _selectedDate,

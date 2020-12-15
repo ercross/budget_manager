@@ -1,7 +1,9 @@
-import 'package:budget_manager/repository/database_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
+import '../bloc/chart/chart_event.dart';
+import '../bloc/chart/chart_bloc.dart';
+import '../repository/database_provider.dart';
 import '../models/expense.dart';
 import '../bloc/expense/expense_bloc.dart';
 import './expense_card.dart';
@@ -82,5 +84,6 @@ class _ExpenseList extends State<ExpenseList> {
       widget.expenses.remove(expense);
     });
     BlocProvider.of<ExpenseBloc>(context).add(DeleteExpense(expense.id));
+    BlocProvider.of<ChartBloc>(context).add(AddOrRemoveExpenseFromChart(expense));
   }
 }

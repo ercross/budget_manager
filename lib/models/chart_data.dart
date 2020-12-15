@@ -203,6 +203,7 @@ class ChartData extends Equatable {
     return expenses;
   }
 
+  //todo refactor code using the logic used in ChartBloc()._dateIsContainedIn
   List<DateTime> _calculateDates() {
 
     final f = chartDataDateRange.fromDate;

@@ -19,19 +19,13 @@ class ChartBloc extends Bloc<ChartEvent, ChartState> {
       yield EmptyChart();
     }
 
-    if (event is AddNewExpenseToChart) {
-      print("AddNewExpenseToChart event received");
+    if (event is AddOrRemoveExpenseFromChart) {
       final DateTime date = DateTime(event.expense.date.year, event.expense.date.month, event.expense.date.day);
-      print("Date constructed: $date");
       final ChartDataDateRange dateRange = await Repository.repository.getChartDataDateRange();
-      print("DateRange fetched. \n value: $dateRange");
       if (_dateIsContainedInRange(dateRange, date)) {
-        print("date is contained in dateRange");
         final ChartData chartData = await ChartData(dateRange).setChartData();
-        print("new chartdata prepared. Yielding a new state");
         yield ChartDataSet(chartData);
       }
-      print("exiting AddNewExpenseToChart");
     }
 
     if (event is BuildNewChart) {
