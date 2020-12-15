@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../models/expense.dart';
 import '../../models/chart_data.dart';
 import '../../models/chart_data_date_range.dart';
 
@@ -20,6 +21,12 @@ class BuildNewChart extends ChartEvent {
 
   @override
   List<Object> get props => [chartData];
+}
+
+class AddNewExpenseToChart extends ChartEvent {
+  final Expense expense;
+
+  const AddNewExpenseToChart(this.expense);
 }
 
 class GetNewChartData extends ChartEvent {

@@ -14,9 +14,10 @@ class Preferences{
 
   ChartDataDateRange get chartDataDateRange{
     if (_chartDataDateRange == null) {
+      final DateTime date = DateTime.now();
       return _chartDataDateRange = ChartDataDateRange(
-        toDate: DateTime.now(),
-        fromDate: DateTime.now().subtract(Duration(days: 6)));
+        toDate: DateTime(date.year, date.month, date.day),
+        fromDate: DateTime(date.year, date.month, date.day).subtract(Duration(days: 6)));
     }
     return _chartDataDateRange;
   }

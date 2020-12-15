@@ -75,7 +75,8 @@ class MyHomePage extends StatelessWidget {
     showModalBottomSheet(
         context: buildContext,
         builder: (context) {
-          return SingleChildScrollView(child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext)));
+          return SingleChildScrollView(
+            child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext), BlocProvider.of<ChartBloc>(buildContext)));
         });
   }
 }

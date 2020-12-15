@@ -204,6 +204,7 @@ class ChartData extends Equatable {
   }
 
   List<DateTime> _calculateDates() {
+
     final f = chartDataDateRange.fromDate;
     final t = chartDataDateRange.toDate;
 

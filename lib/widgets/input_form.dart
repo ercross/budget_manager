@@ -1,14 +1,18 @@
+import 'package:budget_manager/bloc/chart/chart_event.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
+import '../bloc/chart/chart_bloc.dart';
 import '../bloc/expense/expense_bloc.dart';
 import '../models/expense.dart';
 
 class InputFields extends StatefulWidget {
   final ExpenseBloc expenseBloc;
+  final ChartBloc chartBloc;
 
-  InputFields(this.expenseBloc);
+  const InputFields(this.expenseBloc, this.chartBloc);
 
   @override
   _InputFieldsState createState() => _InputFieldsState();
@@ -86,10 +90,15 @@ class _InputFieldsState extends State<InputFields> {
     final String title = _titleController.text;
     final double amount = double.parse(_amountController.text);
     
-    if (title.isEmpty || amount < 0) {
+    if (title.isEmpty && amount < 0 && _selectedDate == null) {
       return;
     }
-    /*BlocProvider.of<ExpenseCubit>(context)*/widget.expenseBloc.add(AddExpense (new Expense(
+    widget.expenseBloc.add(AddExpense (new Expense(
+      title: title,
+      amount: amount,
+      date: _selectedDate,
+    )));
+    widget.chartBloc.add( AddNewExpenseToChart (new Expense(
       title: title,
       amount: amount,
       date: _selectedDate,

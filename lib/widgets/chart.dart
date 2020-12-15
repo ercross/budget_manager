@@ -1,3 +1,4 @@
+import 'package:budget_manager/models/expense.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -60,23 +61,23 @@ class _ChartState extends State<ExpenseManagerBarChart> {
                 Expanded(
                     child: Align(
                         alignment: Alignment.center,
-                        child: _makeStateDecision(state, context)))
+                        child: _makeStateDecision(state)))
               ],
             ));
       },
     );
   }
 
-  Widget _makeStateDecision(ChartState state, BuildContext ctx) {
+  Widget _makeStateDecision(ChartState state) {
     if (state is ChartDataSet) {
       if (state.chartData == null) {
-        return _emptyChartWidget(ctx);
+        return _emptyChartWidget;
       }
       this._chartData = state.chartData;
       return _buildChartBody();
     }
 
-    return _emptyChartWidget(ctx);
+    return _emptyChartWidget;
   }
 
   ///made static const and class variable for performance gain
@@ -91,27 +92,10 @@ class _ChartState extends State<ExpenseManagerBarChart> {
     ),
   );
 
-  Widget _emptyChartWidget(BuildContext ctx) {
-    return Container(
-        width: double.infinity,
-        height: widget.availableSpace,
-        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        padding: EdgeInsets.only(top: 5, bottom: 0, left: 10, right: 10),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).primaryColor,
-          ),
-          borderRadius: BorderRadius.circular(5),
-          color: Theme.of(context).primaryColor.withOpacity(0.8),
-        ),
-        child: Expanded(
-            child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  "No data loaded into chart",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ))));
-  }
+  static const Widget _emptyChartWidget = Text(
+              "No data loaded into chart",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            );
 
   Widget _buildTotalAmountWidget() {
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
