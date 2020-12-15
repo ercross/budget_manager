@@ -1,8 +1,8 @@
 
 import 'package:equatable/equatable.dart';
 
-///ChartDateRange was extracted out of ChartData so that ChartData can contain the data it contains now
-///and also that date range may be separated from the chartData
+///ChartDataDateRange takes two dates which must not be more than 6 days apart from each other
+///where day1 is the farthest day from DateTime.now() and represented by fromDate
 class ChartDataDateRange extends Equatable{
   final DateTime fromDate;
   final DateTime toDate;

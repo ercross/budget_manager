@@ -18,6 +18,7 @@ class ExpenseTable {
   }
 }
 
+
 class DatabaseProvider {
   static const String _databaseName = "expenses.db";
   static const int _databaseVersion = 1;

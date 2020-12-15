@@ -8,15 +8,16 @@ import './chart_event.dart';
 import './chart_state.dart';
 
 class ChartBloc extends Bloc<ChartEvent, ChartState> {
-  ChartBloc() : super(ChartInitial(ChartData(ChartDataDateRange(
-    fromDate: DateTime.now().subtract( Duration(days: 6) ),
-    toDate: DateTime.now()
-  ))));
+
+  //todo fetch from repository
+  final ChartDataDateRange chartDataDateRange;
+
+  ChartBloc(this.chartDataDateRange) : super(ChartInitial(ChartData(chartDataDateRange)));
 
   @override
   Stream<ChartState> mapEventToState(ChartEvent event) async* {
     if (event is GetDefaultChartData) {
-      final chartData = await ChartData(ChartDataDateRange()).setChartData();
+      final chartData = await ChartData(chartDataDateRange).setChartData();
       yield ChartInitial(chartData);
     }
     if (event is GetChartData) {

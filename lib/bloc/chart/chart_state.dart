@@ -18,9 +18,8 @@ class ChartInitial extends ChartState {
   List<Object> get props => [initialChartData];
 }
 
-// class ChartLastLoaded extends ChartState {
-  
-// }
+class ChartNoData extends ChartState {
+}
 
 class ChartDataSet extends ChartState {
   final ChartData chartData;

@@ -8,26 +8,28 @@ import 'chart_data_date_range.dart';
 import 'expense.dart';
 
 class ChartData extends Equatable {
+
   final ChartDataDateRange chartDataDateRange;
 
-  ///value calculated inside sortByDate()
   double totalAmount = 0;
 
-  ///Lists in dart are ordered according to entry position
-  ///So weekdaysNames[1] maps onto expensesPerDate[1], dailyExpensesTotal[1], percentageSpentPerDay[1], dates[1].
-  ///More simply, the expenses of day N, say day1, in ChartDataDateRange is found in expensesPerDate[N], i.e., expensesPerDate[1]
-  ///Note that day1 is the farthest day from DateTime.now(), i.e., chartDataDateRange.fromDate in this context
+  //Lists in dart are ordered according to entry position
+  //So weekdaysNames[1] maps onto expensesPerDate[1], dailyExpensesTotal[1], percentageSpentPerDay[1], dates[1].
+  //All list instance initialized with initial capacity = 7 since the chart is built to populate a 7-day data at a time
   List<String> weekdaysNames = List<String>(7);
   List<List<Expense>> expensesPerDate = List<List<Expense>>(7);
+
+  ///dailyExpensesTotal is the total amount spent on expenses per date contained in chartDataDateRange.fromDate
   List<double> dailyExpensesTotal = List<double>(7);
   List<double> percentageSpentPerDay = List<double>(7);
   List<DateTime> dates = List<DateTime>(7);
 
-  ///Note that toDate must be closer to today's date than fromDate. In other words, toDate must be greater than fromDate
+  //This constructor is the entry point to this class. 
+  ///Note that toDate must be closer to DateTime.now() than fromDate. In other words, toDate must be greater than fromDate
   ///setChartData must be invoked on this instance to set the fields of this instance
   ChartData(this.chartDataDateRange);
 
-  ///ChartData._loaded was only used to bind weekdaysNames, expensesPerDate, and dailyExpensesTotal into one object
+  ///ChartData._loaded was only used to bind and export weekdaysNames, expensesPerDate, and dailyExpensesTotal into one object
   ///so setChartData can return all with one return statement.
   ChartData._loaded(
       {this.chartDataDateRange,
@@ -38,13 +40,18 @@ class ChartData extends Equatable {
       @required this.percentageSpentPerDay,
       @required this.dates});
 
+  ///ChartData.noData signifies that no expenses was found for the date range entered
+  ///This constructor should not be called to pass data i.e., ChartDataDateRange into this class. See ChartData()
+  ChartData.noData({this.chartDataDateRange});
+
   @override
   List<Object> get props => [
         chartDataDateRange,
         totalAmount,
         weekdaysNames,
         expensesPerDate,
-        dailyExpensesTotal
+        dailyExpensesTotal,
+        dates
       ];
 
   ///The closest date to TimeDate.now() is returned as day7 in index 7
@@ -55,7 +62,7 @@ class ChartData extends Equatable {
     final List<DateTime> _dates = _calculateDates();
     final List<List<Expense>> _expenses = await _fetchDateRangeExpenses(_dates);
     if (_expenses.isEmpty){
-      return ChartData(chartDataDateRange);
+      return ChartData.noData();
     }
     List<List<Expense>> _sortedExpenses = _sortExpenses(_expenses, _dates);
     final double _totalAmount = _calculateTotalAmount(_sortedExpenses);

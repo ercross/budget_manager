@@ -8,6 +8,7 @@ abstract class ChartEvent extends Equatable {
   List<Object> get props => [];
 }
 
+///GetDefaultChartData is often called when the app is started to fetch the def
 class GetDefaultChartData extends ChartEvent {
   final ChartDataDateRange chartDataDateRange = ChartDataDateRange();
 
@@ -15,6 +16,10 @@ class GetDefaultChartData extends ChartEvent {
 
   @override
   List<Object> get props => [chartDataDateRange];
+}
+
+class BuildNoDataChart extends ChartEvent {
+
 }
 
 class GetChartData extends ChartEvent {
