@@ -1,3 +1,5 @@
+import 'package:budget_manager/models/chart_data_date_range.dart';
+import 'package:budget_manager/repository/preferences.dart';
 import 'package:flutter/material.dart';
 
 import '../repository/database_provider.dart';
@@ -7,7 +9,11 @@ import '../models/expense.dart';
 ///This repository is provided as an abstraction to these persistence options
 class Repository {
 
+  Repository._();
+
+  static final Repository repository = Repository._();
   final DatabaseProvider db = DatabaseProvider.databaseProvider;
+  final Preferences prefs = Preferences.prefs;
 
   Future<void> insert (String tableName, Expense expense) async {
     await db.insert(tableName, expense);
@@ -28,5 +34,17 @@ class Repository {
 
   Future<List<List<Expense>>> batchGet (String tableName, String where, List<DateTime> whereArgs) async {
     return await db.batchGet(tableName, where, whereArgs);
+  }
+
+  Future<ChartDataDateRange> getChartDataDateRange() async {
+    final dateRange = await prefs.fetchChartDataDateRange();
+    if (dateRange == null) {
+      return prefs.chartDataDateRange;
+    }
+    return dateRange;
+  }
+
+  Future<void> setChartDataDateRange(ChartDataDateRange chartDataDateRange) async {
+    await prefs.setChartDataDateRange(chartDataDateRange);
   }
 }

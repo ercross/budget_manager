@@ -12,11 +12,24 @@ class ChartDataDateRange extends Equatable{
   ///fromDate = last six day's date
   ChartDataDateRange ({this.fromDate, this.toDate});
 
+  //map keys are hardcoded here since they are not referenced in any other class
+  ChartDataDateRange.fromMap(Map<String, dynamic> map)
+    : fromDate = DateTime.parse(map["fromDate"]),
+      toDate = DateTime.parse(map["toDate"]);
+
+  Map<String, dynamic> toMap() {
+    return {
+      "fromDate": DateTime(fromDate.year, fromDate.month, fromDate.day).toString(),
+      "toDate": DateTime(toDate.year, toDate.month, toDate.day).toString(),
+    };
+  }
+
+
+  @override
+  List<Object> get props => [fromDate, toDate];
+
   @override
   String toString() {
     return "fromDate: $fromDate \ntoDate: $toDate";
   }
-
-  @override
-  List<Object> get props => [fromDate, toDate];
 }

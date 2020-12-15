@@ -6,6 +6,7 @@ import 'bloc/expense/expense_bloc.dart';
 import 'bloc/chart/chart_bloc.dart';
 import 'models/chart_data_date_range.dart';
 import 'repository/database_provider.dart';
+import 'repository/repository.dart';
 import 'theme.dart';
 import 'widgets/main_drawer.dart';
 import 'widgets/chart.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
       home: MultiBlocProvider(
         providers: [
           BlocProvider<ExpenseBloc> (
-            create: (context) => ExpenseBloc(DatabaseProvider.databaseProvider)
+            create: (context) => ExpenseBloc(Repository.repository)
           ),
           BlocProvider<ChartBloc> (
             create: (context) => ChartBloc())
@@ -93,10 +94,7 @@ class HomePageBody extends StatelessWidget {
       child: Column(children: <Widget>[
         Container(
             height: displayAreaHeight * 0.35,
-            child: ExpenseManagerBarChart(displayAreaHeight, ChartDataDateRange(
-              fromDate: DateTime.now().subtract( Duration(days: 6) ),
-              toDate: DateTime.now()
-            ) )),
+            child: ExpenseManagerBarChart(displayAreaHeight, Repository.repository)),
         Expanded(
           child: Container(
               height: displayAreaHeight * 0.7, child: ExpenseList()),

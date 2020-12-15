@@ -40,10 +40,6 @@ class ChartData extends Equatable {
       @required this.percentageSpentPerDay,
       @required this.dates});
 
-  ///ChartData.noData signifies that no expenses was found for the date range entered
-  ///This constructor should not be called to pass data i.e., ChartDataDateRange into this class. See ChartData()
-  ChartData.noData({this.chartDataDateRange});
-
   @override
   List<Object> get props => [
         chartDataDateRange,
@@ -54,15 +50,16 @@ class ChartData extends Equatable {
         dates
       ];
 
-  ///The closest date to TimeDate.now() is returned as day7 in index 7
+  ///The closest date to TimeDate.now() is returned as day7 in index 6
   ///return data structure break down:
   ///Outer List index = DateTime.weekday e.g., returns 1 for Monday, 2 for Tuesday
   ///Map<weekdayName, expensesOnThisDay>
+  ///setChartData() returns null if no expenses were found for the data range
   Future<ChartData> setChartData() async {
     final List<DateTime> _dates = _calculateDates();
     final List<List<Expense>> _expenses = await _fetchDateRangeExpenses(_dates);
-    if (_expenses.isEmpty){
-      return ChartData.noData();
+    if(_expenses.isEmpty) {
+      return null;
     }
     List<List<Expense>> _sortedExpenses = _sortExpenses(_expenses, _dates);
     final double _totalAmount = _calculateTotalAmount(_sortedExpenses);
@@ -72,7 +69,7 @@ class ChartData extends Equatable {
 
     return ChartData._loaded(
         weekdaysNames: _weekdaysNames,
-        totalAmount: _totalAmount == null ? 0 : _totalAmount,
+        totalAmount: _totalAmount,
         expensesPerDate: _sortedExpenses,
         dailyExpensesTotal: _dailyExpensesTotal,
         percentageSpentPerDay: _percentageSpentPerDay,
@@ -84,12 +81,15 @@ class ChartData extends Equatable {
     double dailyPercentage;
     for (int i=0; i<_dailyExpensesTotal.length; i++) {
       dailyPercentage = 0;
+
+      if (_dailyExpensesTotal[i] == 0) {
+        _percentageSpentPerDay.add(0);
+        continue;
+      }
+
       dailyPercentage = (_dailyExpensesTotal[i] * 100) / _totalAmount;
       _percentageSpentPerDay.add(double.parse(dailyPercentage.toStringAsFixed(2)));
     }
-    _percentageSpentPerDay.forEach((percentage) {
-      print("percentage spent on day ${_percentageSpentPerDay.indexOf(percentage)}: $percentage");
-     });
 
     return _percentageSpentPerDay;
   }
@@ -105,25 +105,38 @@ class ChartData extends Equatable {
 
     for (int i = 0; i < expenses.length; i++) {
       expenses[i].forEach((expense) {
+
         if (expense.date.isAtSameMomentAs(dates[0]) &&
             !day1Expenses.contains(expense)) {
           day1Expenses.add(expense);
-        } else if (expense.date.isAtSameMomentAs(dates[1]) &&
+        } 
+
+        else if (expense.date.isAtSameMomentAs(dates[1]) &&
             !day2Expenses.contains(expense)) {
           day2Expenses.add(expense);
-        } else if (expense.date.isAtSameMomentAs(dates[2]) &&
+        }
+
+        else if (expense.date.isAtSameMomentAs(dates[2]) &&
             !day3Expenses.contains(expense)) {
           day3Expenses.add(expense);
-        } else if (expense.date.isAtSameMomentAs(dates[3]) &&
+        }
+
+        else if (expense.date.isAtSameMomentAs(dates[3]) &&
             !day4Expenses.contains(expense)) {
           day4Expenses.add(expense);
-        } else if (expense.date.isAtSameMomentAs(dates[4]) &&
+        }
+
+        else if (expense.date.isAtSameMomentAs(dates[4]) &&
             !day5Expenses.contains(expense)) {
           day5Expenses.add(expense);
-        } else if (expense.date.isAtSameMomentAs(dates[5]) &&
+        }
+
+        else if (expense.date.isAtSameMomentAs(dates[5]) &&
             !day6Expenses.contains(expense)) {
           day6Expenses.add(expense);
-        } else if (expense.date.isAtSameMomentAs(dates[6]) &&
+        }
+
+        else if (expense.date.isAtSameMomentAs(dates[6]) &&
             !day7Expenses.contains(expense)) {
           day7Expenses.add(expense);
         }
@@ -150,9 +163,16 @@ class ChartData extends Equatable {
 
     for (int i = 0; i < expensesPerDate.length; i++) {
       dailyTotal = 0;
+
+      if (expensesPerDate[i].isEmpty) {
+        _dailyExpensesTotal.add(0);
+        continue;
+      }
+
       expensesPerDate[i].forEach((expense) {
         dailyTotal += expense.amount;
       });
+
       _dailyExpensesTotal.add(dailyTotal);
     }
     return _dailyExpensesTotal;

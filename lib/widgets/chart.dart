@@ -3,34 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 
-import '../bloc/chart/chart_bloc.dart';
-import '../bloc/chart/chart_event.dart';
-import '../bloc/chart/chart_state.dart';
 import '../models/chart_data.dart';
-import '../models/chart_data_date_range.dart';
-
+import '../repository/repository.dart';
+import '../bloc/chart/chart_bloc.dart';
+import '../bloc/chart/chart_state.dart';
+import '../bloc/chart/chart_event.dart';
 
 class ExpenseManagerBarChart extends StatefulWidget {
   final double availableSpace;
-  final ChartDataDateRange chartDataDateRange;
+  final Repository repository;
 
-  ExpenseManagerBarChart(this.availableSpace, this.chartDataDateRange);
+  ExpenseManagerBarChart(this.availableSpace, this.repository);
 
   @override
   _ChartState createState() => _ChartState();
 }
 
 class _ChartState extends State<ExpenseManagerBarChart> {
-  ChartData chartData;
+  ///_chartData is a class instance to provide easy access to it throughout this class
+  ChartData _chartData;
 
   @override
   void initState() {
     super.initState();
-    chartData = ChartData(widget.chartDataDateRange);
-    ChartData(widget.chartDataDateRange).setChartData().then((value) {
-      chartData = value;
-      BlocProvider.of<ChartBloc>(context)
-          .add(GetChartData(widget.chartDataDateRange));
+    widget.repository.getChartDataDateRange().then((dateRange) {
+      ChartData(dateRange).setChartData().then((chartData) {
+        _chartData = chartData;
+        BlocProvider.of<ChartBloc>(context).add(BuildNewChart(chartData));
+      });
     });
   }
 
@@ -55,31 +55,33 @@ class _ChartState extends State<ExpenseManagerBarChart> {
               children: [
                 Container(
                     height: widget.availableSpace * 0.1,
-                    child:
-                        Align(alignment: Alignment.center, child: _chartTitle)),
+                    child: Align(
+                        alignment: Alignment.center, child: _chartTitleWidget)),
                 Expanded(
                     child: Align(
                         alignment: Alignment.center,
-                        child: _makeStateDecision(state)))
+                        child: _makeStateDecision(state, context)))
               ],
             ));
       },
     );
   }
 
-  Widget _makeStateDecision(ChartState state) {
-    if (state is ChartInitial) {
-      return _buildChartBody(state.initialChartData);
-    }
+  Widget _makeStateDecision(ChartState state, BuildContext ctx) {
     if (state is ChartDataSet) {
-      return _buildChartBody(state.chartData);
+      if (state.chartData == null) {
+        return _emptyChartWidget(ctx);
+      }
+      this._chartData = state.chartData;
+      return _buildChartBody();
     }
-    return Container();
+
+    return _emptyChartWidget(ctx);
   }
 
   ///made static const and class variable for performance gain
   ///as static const properties always return the same instance
-  static const Text _chartTitle = const Text(
+  static const Text _chartTitleWidget = const Text(
     'expenses chart',
     style: TextStyle(
       fontSize: 20,
@@ -89,11 +91,33 @@ class _ChartState extends State<ExpenseManagerBarChart> {
     ),
   );
 
-  Widget _buildTotalAmountWidget(double totalAmount) {
+  Widget _emptyChartWidget(BuildContext ctx) {
+    return Container(
+        width: double.infinity,
+        height: widget.availableSpace,
+        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: EdgeInsets.only(top: 5, bottom: 0, left: 10, right: 10),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).primaryColor,
+          ),
+          borderRadius: BorderRadius.circular(5),
+          color: Theme.of(context).primaryColor.withOpacity(0.8),
+        ),
+        child: Expanded(
+            child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "No data loaded into chart",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ))));
+  }
+
+  Widget _buildTotalAmountWidget() {
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Align(
-        alignment: Alignment.centerLeft,
-        child: const Text("Total:",
+        alignment: Alignment.center,
+        child: const Text("total:",
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -112,7 +136,7 @@ class _ChartState extends State<ExpenseManagerBarChart> {
           ),
           child: FittedBox(
               child: Text(
-            '\$$totalAmount',
+            '${_chartData.totalAmount}',
             style: TextStyle(fontWeight: FontWeight.bold),
           )),
         ),
@@ -120,11 +144,11 @@ class _ChartState extends State<ExpenseManagerBarChart> {
     ]);
   }
 
-  Widget _buildChartBody(ChartData chartData) {
+  Widget _buildChartBody() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: _buildTotalAmountWidget(chartData.totalAmount)),
+        Expanded(child: _buildTotalAmountWidget()),
         _buildExpenseBars(),
       ],
     );
@@ -146,24 +170,27 @@ class _ChartState extends State<ExpenseManagerBarChart> {
         swapAnimationDuration: animationDuration);
   }
 
-  BarTouchData _setBarTouchData () {
+  BarTouchData _setBarTouchData() {
     return BarTouchData(
       handleBuiltInTouches: true,
       touchTooltipData: BarTouchTooltipData(
-        fitInsideHorizontally: true,
-        fitInsideVertically: true,
-        tooltipBgColor: Color.fromRGBO(171, 39, 79, 0.2),
-        getTooltipItem: (BarChartGroupData group, int groupindex, BarChartRodData rod, int rodIndex) {
-          final double totalAmount = chartData.dailyExpensesTotal[group.x];
-          final String date = DateFormat.yMMMMd('en_US').format(chartData.dates[group.x]);
+          fitInsideHorizontally: true,
+          fitInsideVertically: true,
+          tooltipBgColor: Color.fromRGBO(171, 39, 79, 0.2),
+          getTooltipItem: (BarChartGroupData group, int groupindex,
+              BarChartRodData rod, int rodIndex) {
+            final double totalAmount = _chartData.dailyExpensesTotal[group.x];
+            final String date =
+                DateFormat.yMMMMd('en_US').format(_chartData.dates[group.x]);
 
-          //return 0 is either divisor or dividend is zero
-          final double percentage = chartData.percentageSpentPerDay[group.x];
-           return BarTooltipItem( "$date \n amount spent: $totalAmount \n % of total amount: $percentage%"
-                        , TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
-      }),
+            //return 0 is either divisor or dividend is zero
+            final double percentage = _chartData.percentageSpentPerDay[group.x];
+            return BarTooltipItem(
+                "$date \n amount spent: $totalAmount \n % of total amount: $percentage%",
+                TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
+          }),
     );
-  } 
+  }
 
   FlTitlesData _setTitleData() {
     return FlTitlesData(
@@ -175,26 +202,26 @@ class _ChartState extends State<ExpenseManagerBarChart> {
             getTitles: (double value) {
               switch (value.toInt()) {
                 case 0:
-                  return chartData.weekdaysNames[0];
+                  return _chartData.weekdaysNames[0];
                 case 1:
-                  return chartData.weekdaysNames[1];
+                  return _chartData.weekdaysNames[1];
                 case 2:
-                  return chartData.weekdaysNames[2];
+                  return _chartData.weekdaysNames[2];
                 case 3:
-                  return chartData.weekdaysNames[3];
+                  return _chartData.weekdaysNames[3];
                 case 4:
-                  return chartData.weekdaysNames[4];
+                  return _chartData.weekdaysNames[4];
                 case 5:
-                  return chartData.weekdaysNames[5];
+                  return _chartData.weekdaysNames[5];
                 case 6:
-                  return chartData.weekdaysNames[6];
+                  return _chartData.weekdaysNames[6];
                 default:
                   return '';
               }
             }));
   }
 
-  BarChartGroupData _makeAbarRod (int xAxisPosition, double yAxisValue) {
+  BarChartGroupData _makeAbarRod(int xAxisPosition, double yAxisValue) {
     return BarChartGroupData(x: xAxisPosition, barRods: [
       BarChartRodData(
         y: yAxisValue,
@@ -208,13 +235,13 @@ class _ChartState extends State<ExpenseManagerBarChart> {
 
   List<BarChartGroupData> _makeBarGroups() {
     return [
-      _makeAbarRod(0, chartData.percentageSpentPerDay[0] ?? 0),
-      _makeAbarRod(1, chartData.percentageSpentPerDay[1] ?? 0),
-      _makeAbarRod(2, chartData.percentageSpentPerDay[2] ?? 0),
-      _makeAbarRod(3, chartData.percentageSpentPerDay[3] ?? 0),
-      _makeAbarRod(4, chartData.percentageSpentPerDay[4] ?? 0),
-      _makeAbarRod(5, chartData.percentageSpentPerDay[5] ?? 0),
-      _makeAbarRod(6, chartData.percentageSpentPerDay[6] ?? 0),
+      _makeAbarRod(0, _chartData.percentageSpentPerDay[0]),
+      _makeAbarRod(1, _chartData.percentageSpentPerDay[1]),
+      _makeAbarRod(2, _chartData.percentageSpentPerDay[2]),
+      _makeAbarRod(3, _chartData.percentageSpentPerDay[3]),
+      _makeAbarRod(4, _chartData.percentageSpentPerDay[4]),
+      _makeAbarRod(5, _chartData.percentageSpentPerDay[5]),
+      _makeAbarRod(6, _chartData.percentageSpentPerDay[6]),
     ];
   }
 }

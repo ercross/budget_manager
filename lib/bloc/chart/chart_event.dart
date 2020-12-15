@@ -1,5 +1,7 @@
-import 'package:budget_manager/models/chart_data_date_range.dart';
 import 'package:equatable/equatable.dart';
+
+import '../../models/chart_data.dart';
+import '../../models/chart_data_date_range.dart';
 
 abstract class ChartEvent extends Equatable {
   const ChartEvent();
@@ -8,24 +10,22 @@ abstract class ChartEvent extends Equatable {
   List<Object> get props => [];
 }
 
-///GetDefaultChartData is often called when the app is started to fetch the def
-class GetDefaultChartData extends ChartEvent {
-  final ChartDataDateRange chartDataDateRange = ChartDataDateRange();
+class BuildEmptyChart extends ChartEvent {
+}
 
-  GetDefaultChartData();
+class BuildNewChart extends ChartEvent {
+  final ChartData chartData;
+
+  const BuildNewChart(this.chartData);
 
   @override
-  List<Object> get props => [chartDataDateRange];
+  List<Object> get props => [chartData];
 }
 
-class BuildNoDataChart extends ChartEvent {
-
-}
-
-class GetChartData extends ChartEvent {
+class GetNewChartData extends ChartEvent {
   final ChartDataDateRange chartDataDateRange;
 
-  const GetChartData(this.chartDataDateRange);
+  const GetNewChartData(this.chartDataDateRange);
 
   @override
   List<Object> get props => [chartDataDateRange];

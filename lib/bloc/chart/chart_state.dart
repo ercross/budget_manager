@@ -10,15 +10,11 @@ abstract class ChartState extends Equatable {
 }
 
 class ChartInitial extends ChartState {
-  final ChartData initialChartData;
-
-  const ChartInitial(this.initialChartData);
-
-  @override
-  List<Object> get props => [initialChartData];
+  const ChartInitial();
 }
 
-class ChartNoData extends ChartState {
+class EmptyChart extends ChartState {
+  const EmptyChart();
 }
 
 class ChartDataSet extends ChartState {
