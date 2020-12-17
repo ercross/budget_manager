@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 import 'bloc_observer.dart';
 import 'bloc/expense/expense_bloc.dart';
 import 'bloc/chart/chart_bloc.dart';
-import 'models/chart_data_date_range.dart';
-import 'repository/database_provider.dart';
+import 'repository/preferences.dart';
 import 'repository/repository.dart';
 import 'theme.dart';
 import 'widgets/main_drawer.dart';
@@ -14,7 +14,9 @@ import 'widgets/expense_list.dart';
 import 'widgets/input_form.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await  Preferences.loadSettings();
   Bloc.observer = SimpleBlocObserver();
   runApp(MyApp());
 }
@@ -72,12 +74,19 @@ class MyHomePage extends StatelessWidget {
   }
 
   void showInputFieldBoxes(BuildContext buildContext) {
-    showModalBottomSheet(
-        context: buildContext,
-        builder: (context) {
-          return SingleChildScrollView(
-            child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext), BlocProvider.of<ChartBloc>(buildContext)));
-        });
+    Alert(
+      context: buildContext, 
+      title: "New Expense",
+      content: SingleChildScrollView(
+             child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext), BlocProvider.of<ChartBloc>(buildContext))),
+      ).show();
+
+    // showModalBottomSheet(
+    //     context: buildContext,
+    //     builder: (context) {
+    //       return SingleChildScrollView(
+    //         child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext), BlocProvider.of<ChartBloc>(buildContext)));
+    //     });
   }
 }
 

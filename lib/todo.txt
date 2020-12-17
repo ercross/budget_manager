@@ -1,6 +1,4 @@
-Guide against all potential NullPointerException
 Format expense amount as String but should be double at input point
-Show touchData in the chart
 New expense list should be generated daily
 Build UI for portrait mode
 Build UI for iOS platform

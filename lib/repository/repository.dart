@@ -13,7 +13,7 @@ class Repository {
 
   static final Repository repository = Repository._();
   final DatabaseProvider db = DatabaseProvider.databaseProvider;
-  final Preferences prefs = Preferences.prefs;
+  final Preferences sharedPrefs = Preferences.preferences;
 
   Future<void> insert (String tableName, Expense expense) async {
     await db.insert(tableName, expense);
@@ -36,15 +36,10 @@ class Repository {
     return await db.batchGet(tableName, where, whereArgs);
   }
 
-  Future<ChartDataDateRange> getChartDataDateRange() async {
-    final dateRange = await prefs.fetchChartDataDateRange();
-    if (dateRange == null) {
-      return prefs.chartDataDateRange;
-    }
-    return dateRange;
-  }
+  ChartDataDateRange get chartDataDateRange => sharedPrefs.chartDataDateRange;
+  
 
   Future<void> setChartDataDateRange(ChartDataDateRange chartDataDateRange) async {
-    await prefs.setChartDataDateRange(chartDataDateRange);
+    await sharedPrefs.setChartDataDateRange(chartDataDateRange);
   }
 }

@@ -21,7 +21,7 @@ class ChartBloc extends Bloc<ChartEvent, ChartState> {
 
     if (event is AddOrRemoveExpenseFromChart) {
       final DateTime date = DateTime(event.expense.date.year, event.expense.date.month, event.expense.date.day);
-      final ChartDataDateRange dateRange = await Repository.repository.getChartDataDateRange();
+      final ChartDataDateRange dateRange = Repository.repository.chartDataDateRange;
       if (_dateIsContainedInRange(dateRange, date)) {
         final ChartData chartData = await ChartData(dateRange).setChartData();
         yield ChartDataSet(chartData);

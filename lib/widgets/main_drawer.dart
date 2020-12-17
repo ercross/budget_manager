@@ -38,7 +38,7 @@ class MainDrawer extends StatelessWidget {
           _buildDrawerItem("search", Icon(Icons.search), (){}),
           _buildDrawerItem("make budget", Icon(Icons.money), (){}),
           _buildDrawerItem("load chart", Icon(Icons.bar_chart), (){}),
-          _buildDrawerItem("reports", Icon(Icons.report), (){}),
+          _buildDrawerItem("statistics", Icon(Icons.report), (){}),
           _buildDrawerItem("select currency", Icon(Icons.money_off_csred_sharp), (){}),
           _buildDrawerItem("about", Icon(Icons.not_interested), (){}),
           Expanded(child: Container(decoration: BoxDecoration(color: Theme.of(context).primaryColor)))

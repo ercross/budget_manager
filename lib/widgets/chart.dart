@@ -1,4 +1,4 @@
-import 'package:budget_manager/models/expense.dart';
+import 'package:budget_manager/models/chart_data_date_range.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -20,19 +20,40 @@ class ExpenseManagerBarChart extends StatefulWidget {
   _ChartState createState() => _ChartState();
 }
 
-class _ChartState extends State<ExpenseManagerBarChart> {
+class _ChartState extends State<ExpenseManagerBarChart>
+    with WidgetsBindingObserver {
   ///_chartData is a class instance to provide easy access to it throughout this class
   ChartData _chartData;
 
   @override
   void initState() {
     super.initState();
-    widget.repository.getChartDataDateRange().then((dateRange) {
-      ChartData(dateRange).setChartData().then((chartData) {
-        _chartData = chartData;
-        BlocProvider.of<ChartBloc>(context).add(BuildNewChart(chartData));
-      });
+    WidgetsBinding.instance.addObserver(this);
+    final ChartDataDateRange dateRange = widget.repository.chartDataDateRange;
+    ChartData(dateRange).setChartData().then((chartData) {
+      _chartData = chartData;
+      BlocProvider.of<ChartBloc>(context).add(BuildNewChart(chartData));
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final DateTime today = DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day);
+      final ChartDataDateRange newDateRange = ChartDataDateRange(
+        toDate: today,
+        fromDate: today.subtract(Duration(days: 6)),
+      );
+      Repository.repository.setChartDataDateRange(newDateRange);
+      print("state change worked: $state");
+    }
   }
 
   @override
@@ -93,9 +114,9 @@ class _ChartState extends State<ExpenseManagerBarChart> {
   );
 
   static const Widget _emptyChartWidget = Text(
-              "No data loaded into chart",
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            );
+    "No data loaded into chart",
+    style: TextStyle(color: Colors.white, fontSize: 16),
+  );
 
   Widget _buildTotalAmountWidget() {
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

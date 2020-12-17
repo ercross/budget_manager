@@ -56,6 +56,9 @@ class ChartData extends Equatable {
   ///Map<weekdayName, expensesOnThisDay>
   ///setChartData() returns null if no expenses were found for the data range
   Future<ChartData> setChartData() async {
+    if (this.chartDataDateRange == null) {
+      return null;
+    }
     final List<DateTime> _dates = _calculateDates();
     final List<List<Expense>> _expenses = await _fetchDateRangeExpenses(_dates);
     if(_expenses.isEmpty) {
