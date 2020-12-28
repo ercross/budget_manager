@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:equatable/equatable.dart';
-import 'package:intl/intl.dart';
 
-import '../repository/database_provider.dart';
+import '../repository/db_tables.dart';
 
 class Expense extends Equatable{
   final int id;

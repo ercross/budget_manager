@@ -15,10 +15,10 @@ class ExpenseStateInitial extends ExpenseState{
   const ExpenseStateInitial();
 }
 
-class ExpenseStateLoaded extends ExpenseState {
+class ExpenseStateIncreased extends ExpenseState {
   final Expense expense;
 
-  const ExpenseStateLoaded(this.expense);
+  const ExpenseStateIncreased(this.expense);
 
   @override
   List<Object> get props => [expense];
@@ -40,4 +40,13 @@ class ExpenseStateFetched extends ExpenseState {
 
   @override
   List<Object> get props => [expenses];
+}
+
+class ENewCurrencySymbol extends ExpenseState {
+  final String currencySymbol;
+
+  const ENewCurrencySymbol(this.currencySymbol);
+
+  @override
+  List<Object> get props => [currencySymbol];
 }

@@ -1,3 +1,4 @@
+import 'package:budget_manager/widgets/days_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -5,18 +6,17 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'bloc_observer.dart';
 import 'bloc/expense/expense_bloc.dart';
 import 'bloc/chart/chart_bloc.dart';
-import 'repository/preferences.dart';
+import 'repository/contexts_keys.dart';
 import 'repository/repository.dart';
 import 'theme.dart';
 import 'widgets/main_drawer.dart';
 import 'widgets/chart.dart';
-import 'widgets/expense_list.dart';
 import 'widgets/input_form.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await  Preferences.loadSettings();
+  await Preferences.loadSettings();
   Bloc.observer = SimpleBlocObserver();
   runApp(MyApp());
 }
@@ -47,6 +47,7 @@ class MyHomePage extends StatelessWidget {
     final HomePageBody _homepageBody = new HomePageBody();
 
     return Scaffold(
+      key: ScaffGlobalKey.key.scaffold,
       appBar: AppBar(
         title: Text('Expense Manager'),
         actions: [
@@ -61,7 +62,7 @@ class MyHomePage extends StatelessWidget {
                     color: Theme.of(context).primaryColor,
                     highlightColor: Theme.of(context).accentColor,
                     iconSize: 50,
-                    onPressed: () => showInputFieldBoxes(context)
+                    onPressed: () => showInputFieldBoxes(context) //todo check that this context is not the cause for the inactiveconnection error
                     ),
               ),
             ),
@@ -75,26 +76,24 @@ class MyHomePage extends StatelessWidget {
 
   void showInputFieldBoxes(BuildContext buildContext) {
     Alert(
+      closeIcon: Icon(Icons.close, color: Theme.of(buildContext).accentColor,),
       context: buildContext, 
       title: "New Expense",
+      buttons: [],
       content: SingleChildScrollView(
              child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext), BlocProvider.of<ChartBloc>(buildContext))),
       ).show();
-
-    // showModalBottomSheet(
-    //     context: buildContext,
-    //     builder: (context) {
-    //       return SingleChildScrollView(
-    //         child: InputFields(BlocProvider.of<ExpenseBloc>(buildContext), BlocProvider.of<ChartBloc>(buildContext)));
-    //     });
   }
 }
 
 class HomePageBody extends StatelessWidget {
-  const HomePageBody();
+  HomePageBody();
+
+  static BuildContext scaffoldBodyContext;
 
   @override
   Widget build(BuildContext context) {
+    scaffoldBodyContext = context;
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double statusBarHeight = mediaQuery.padding.top;
     final double appBarHeight = AppBar().preferredSize.height;
@@ -103,12 +102,10 @@ class HomePageBody extends StatelessWidget {
     return SafeArea(
       child: Column(children: <Widget>[
         Container(
-            height: displayAreaHeight * 0.35,
+            height: displayAreaHeight * 0.33,
             child: ExpenseManagerBarChart(displayAreaHeight, Repository.repository)),
         Expanded(
-          child: Container(
-              height: displayAreaHeight * 0.7, child: ExpenseList()),
-        ),
+          child: DaysNavigator(displayAreaHeight * 0.67)),
       ]),
     );
   }

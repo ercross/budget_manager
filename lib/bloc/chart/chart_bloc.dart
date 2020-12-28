@@ -14,6 +14,10 @@ class ChartBloc extends Bloc<ChartEvent, ChartState> {
 
   @override
   Stream<ChartState> mapEventToState(ChartEvent event) async* {
+
+    if (event is ChangeChartCurrencySymbol) {
+      yield NewCurrencySymbol(event.currencySymbol);
+    }
     
     if( event is BuildEmptyChart) {
       yield EmptyChart();

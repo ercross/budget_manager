@@ -1,9 +1,4 @@
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../models/chart_data_date_range.dart';
+part of 'repository.dart';
 
 class Preferences{
 
@@ -12,32 +7,69 @@ class Preferences{
   static final Preferences preferences = Preferences._();
 
   //all settings variable stored in shared_preferences
-  //direct access not provided to ensure proper initialization before
-  static ChartDataDateRange _chartDataDateRange;
-  static bool dateRangeAutoGen;
-  static String currencySymbol;
+  //direct access not provided to ensure proper initialization before use
+  //and update should also update the value in sharedPreferences 
+   ChartDataDateRange _chartDataDateRange;
+   int _oldestDate;
+   bool _dateRangeAutoGen;
+   String _currencySymbol;
 
+  DateTime get oldestDate => DateTime.fromMillisecondsSinceEpoch(_oldestDate);
   ChartDataDateRange get chartDataDateRange => _chartDataDateRange;
+  bool get dateRangeAutoGen => _dateRangeAutoGen;
+  String get currencySymbol => _currencySymbol;
+
+  Future toggleDateRangeAutoGen (bool autoGen) async {
+    _dateRangeAutoGen = autoGen;
+    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+    sharedPrefs.setBool(_Keys._dateRangeAutoGen, _dateRangeAutoGen);
+  }
+
+  Future setCurrencySymbol (String newSymbol) async {
+    _currencySymbol = newSymbol;
+    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+    sharedPrefs.setString(_Keys._currencySymbol, _currencySymbol);
+  }
 
   ///initsharedPrefs initializes all settings variable to either a default value or the value previously entered by user
   ///initsharedPrefs must be invoked on application start
   static Future<void> loadSettings () async {
     final sharedPrefs = await SharedPreferences.getInstance();
     preferences._initDateRangeAutoGen(sharedPrefs);
-    preferences._initChartDataDateRange(sharedPrefs, dateRangeAutoGen);
+    preferences._initChartDataDateRange(sharedPrefs, preferences._dateRangeAutoGen);
     preferences._initCurrencySymbol(sharedPrefs);
+    preferences._initOldestDate(sharedPrefs);
+  }
+
+  void _initOldestDate (SharedPreferences sharedPrefs) {
+    _oldestDate = sharedPrefs.getInt(_Keys._oldestDate);
+    if (_oldestDate == null) {
+      final DateTime d = DateTime.now();
+      _oldestDate = DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
+    }
+  }
+
+  //setNewOldestDate is invoked when new expenses are added
+  void setNewOldestDate (DateTime oldestDate) async {
+    final int date = DateTime(oldestDate.year, oldestDate.month, oldestDate.day).millisecondsSinceEpoch;
+    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+    sharedPrefs.setInt(_Keys._oldestDate, date);
   }
 
   void _initDateRangeAutoGen (SharedPreferences sharedPrefs) {
-    if (dateRangeAutoGen == null) 
-      dateRangeAutoGen = true;
-    dateRangeAutoGen = sharedPrefs.getBool(_Keys._dateRangeAutoGen);
+    _dateRangeAutoGen = sharedPrefs.getBool(_Keys._dateRangeAutoGen);
+    if (_dateRangeAutoGen == null) {
+      _dateRangeAutoGen = true;
+      toggleDateRangeAutoGen(_dateRangeAutoGen);
+      }
+      
   }
 
   void _initCurrencySymbol(SharedPreferences sharedPrefs) {
-    if (currencySymbol == null) 
-      currencySymbol = "\$";
-    currencySymbol = sharedPrefs.getString(_Keys._currencySymbol);
+    _currencySymbol = sharedPrefs.getString(_Keys._currencySymbol);
+    if (_currencySymbol == null ) {
+      _currencySymbol = "\$";
+    }
   }
 
   void _initChartDataDateRange (SharedPreferences sharedPrefs, bool dateRangeAutoGen) {
@@ -95,4 +127,5 @@ class _Keys{
   static const String _chartDataDateRange = "chartDataDateRange";
   static const String _dateRangeAutoGen = "dateRangeAutoGen";
   static const String _currencySymbol = "currencySymbol";
+  static const String _oldestDate = "oldestDate";
 }

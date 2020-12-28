@@ -3,7 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
 
 import '../models/chart_data_date_range.dart';
-import '../repository/database_provider.dart';
+import '../repository/db_tables.dart';
+import '../repository/repository.dart';
 import 'chart_data_date_range.dart';
 import 'expense.dart';
 
@@ -200,8 +201,7 @@ class ChartData extends Equatable {
   //each expense list in the outer list correspond to each day numerically. For example list[0] in expenses is day1 expense list
   Future<List<List<Expense>>> _fetchDateRangeExpenses(
       List<DateTime> dates) async {
-    final DatabaseProvider db = DatabaseProvider.databaseProvider;
-    List<List<Expense>> expenses = await db.batchGet(
+    List<List<Expense>> expenses = await Repository.repository.batchGet(
         ExpenseTable.tableName, "${ExpenseTable.columnDate}=?", dates);
     return expenses;
   }

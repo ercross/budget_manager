@@ -41,3 +41,12 @@ class GetNewChartData extends ChartEvent {
   @override
   List<Object> get props => [chartDataDateRange];
 }
+
+class ChangeChartCurrencySymbol extends ChartEvent {
+  final String currencySymbol;
+
+  const ChangeChartCurrencySymbol(this.currencySymbol);
+
+  @override
+  List<Object> get props => [currencySymbol];
+}

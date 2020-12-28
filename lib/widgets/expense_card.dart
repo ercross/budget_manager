@@ -5,9 +5,10 @@ import '../models/expense.dart';
 
 class ExpenseCard extends StatelessWidget {
   final Expense expense;
+  final String currencySymbol;
   final Function (Expense expense) deleteExpense ;
 
-  ExpenseCard(this.expense, this.deleteExpense);
+  ExpenseCard({@required this.expense, @required this.deleteExpense, @required this.currencySymbol});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +24,9 @@ class ExpenseCard extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          expense.amount.toStringAsFixed(2),
+          "$currencySymbol${expense.amount.toString()}",
           style: TextStyle(
+            fontFamily: 'Roboto',
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white

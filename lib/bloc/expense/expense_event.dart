@@ -36,3 +36,12 @@ class FetchExpenses extends ExpenseEvent {
   @override
   List<Object> get props => [expenses];
 }
+
+class ChangeCurrencySymbol extends ExpenseEvent {
+  final String currencySymbol;
+
+  const ChangeCurrencySymbol(this.currencySymbol);
+
+  @override
+  List<Object> get props => [currencySymbol];
+}

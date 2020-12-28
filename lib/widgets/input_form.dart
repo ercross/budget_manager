@@ -1,10 +1,12 @@
 import 'package:budget_manager/bloc/chart/chart_event.dart';
+import 'package:budget_manager/repository/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../bloc/chart/chart_bloc.dart';
 import '../bloc/expense/expense_bloc.dart';
+import '../main.dart';
 import '../models/expense.dart';
 
 class InputFields extends StatefulWidget {
@@ -18,59 +20,49 @@ class InputFields extends StatefulWidget {
 }
 
 class _InputFieldsState extends State<InputFields> {
+
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _selectedDateContr = TextEditingController();
   DateTime _selectedDate;
 
+  Widget buildTextField (String labelText, TextEditingController _contr) {
+    return TextField(
+                autofocus: true,
+                decoration: InputDecoration(
+                    labelText: labelText,
+                    labelStyle: TextStyle(fontWeight: FontWeight.bold)),
+                controller: _contr,
+                onSubmitted: (inputValue) {
+                  _contr.text = inputValue;
+                },
+              );}
+              
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         padding: EdgeInsetsDirectional.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 10,
-            top: 10,
-            //start: 10,
-            end: 10),
+            bottom: MediaQuery.of(context).viewInsets.bottom + 15,//start: 10,
+            ),
         child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                    labelText: "Title",
-                    labelStyle: TextStyle(fontWeight: FontWeight.bold)),
-                controller: _titleController,
-                onSubmitted: (inputValue) {
-                  _titleController.text = inputValue;
-                },
-              ),
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(labelText: "Amount"),
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                onSubmitted: (inputAmount) {
-                  _amountController.text = inputAmount;
-                },
-              ),
+              buildTextField("title", _titleController),
+              buildTextField("amount", _amountController),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  FlatButton(
-                      child: _selectedDate == null
-                          ? Text("Date",
+                  GestureDetector(
+                      child: 
+                          Text("Date",
                               style: TextStyle(
                                   color: Colors.black87,
                                   fontWeight: FontWeight.w600))
-                          : Align( alignment: Alignment.centerLeft,
-                                                      child: Text(DateFormat("dd/MM/yyyy").format(_selectedDate),
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 15)),
-                          ),
-                      onPressed: showDatePicker),
+                          ,
+                      onTap: showDatePicker),
+                  SizedBox(width: 100, height: 70, child:
+                  TextField(controller: _selectedDateContr, readOnly: true, style: TextStyle(fontSize: 13, color: Colors.grey)))
                 ],
               ),
               Align(
@@ -87,11 +79,24 @@ class _InputFieldsState extends State<InputFields> {
 
   void addNewExpense(BuildContext context) {
     final String title = _titleController.text;
-    final double amount = double.parse(_amountController.text);
+    final double amount = double.parse(_amountController.text, 
+    //double.parse.onError
+    (value){
+      Scaffold.of(HomePageBody.scaffoldBodyContext).showSnackBar(SnackBar(
+        content: Text("$value is not a valid amount"),
+        duration: Duration(seconds: 2),
+      ));
+      return null;
+    });
     
-    if (title.isEmpty && amount < 0 && _selectedDate == null) {
+    if (title == null || amount == null || _selectedDate == null) {
       return;
     }
+
+    if (_selectedDate.isBefore(Repository.repository.oldestDate)) {
+      Repository.repository.setNewOldestDate(_selectedDate);
+    }
+
     widget.expenseBloc.add(AddExpense (new Expense(
       title: title,
       amount: amount,
@@ -108,10 +113,10 @@ class _InputFieldsState extends State<InputFields> {
   void showDatePicker() {
     DatePicker.showDatePicker(context,
         showTitleActions: true,
-        currentTime: DateTime.now(), onChanged: (selectedDate) {
+        currentTime: DateTime.now(), 
+        onConfirm: (selectedDate) {
       _selectedDate = selectedDate;
-    }, onConfirm: (selectedDate) {
-      _selectedDate = selectedDate;
+      _selectedDateContr.text = DateFormat("dd/MM/yyyy").format(_selectedDate);
     });
   }
 }

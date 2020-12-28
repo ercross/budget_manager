@@ -25,3 +25,12 @@ class ChartDataSet extends ChartState {
   @override
   List<Object> get props => [chartData];
 }
+
+class NewCurrencySymbol extends ChartState {
+  final String currencySymbol;
+
+  const NewCurrencySymbol(this.currencySymbol);
+
+  @override
+  List<Object> get props => [currencySymbol];
+}

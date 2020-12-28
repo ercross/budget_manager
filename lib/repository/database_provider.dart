@@ -1,23 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-
-import '../models/expense.dart';
-
-class ExpenseTable {
-  static const String tableName = "expenseTable";
-  static const String columnId = "id";
-  static const String columnDate = "date";
-  static const String columnAmount = "amount";
-  static const String columnTitle = "title";
-
-  static FutureOr<void> create (Database database, int version) async {
-    await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, $columnTitle TEXT, $columnAmount REAL, $columnDate INTEGER)');
-  }
-}
-
+part of 'repository.dart';
 
 class DatabaseProvider {
   static const String _databaseName = "expenses.db";
@@ -65,6 +46,7 @@ class DatabaseProvider {
 
   ///getAll fetches all rows of the database or fetches item specified through where and whereArgs
   ///if where and whereArgs are null, the whole table item is returned
+  ///if passing date in whereArgs, ensure to convert time to millisecondsSinceEpoch
   Future<List<Expense>> getAll (String tableName, {String where, List<dynamic> whereArgs}) async {
     final Database db = await _getDatabaseDriver();
     List<Map<String, dynamic>> maps;

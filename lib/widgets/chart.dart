@@ -20,10 +20,10 @@ class ExpenseManagerBarChart extends StatefulWidget {
   _ChartState createState() => _ChartState();
 }
 
-class _ChartState extends State<ExpenseManagerBarChart>
-    with WidgetsBindingObserver {
-  ///_chartData is a class instance to provide easy access to it throughout this class
+class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObserver {
+  
   ChartData _chartData;
+  String _currencySymbol;
 
   @override
   void initState() {
@@ -44,7 +44,10 @@ class _ChartState extends State<ExpenseManagerBarChart>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed &&
+        (Repository.repository.dateRangeAutoGen == null
+            ? true
+            : Repository.repository.dateRangeAutoGen)) {
       final DateTime today = DateTime(
           DateTime.now().year, DateTime.now().month, DateTime.now().day);
       final ChartDataDateRange newDateRange = ChartDataDateRange(
@@ -52,12 +55,24 @@ class _ChartState extends State<ExpenseManagerBarChart>
         fromDate: today.subtract(Duration(days: 6)),
       );
       Repository.repository.setChartDataDateRange(newDateRange);
-      print("state change worked: $state");
     }
   }
 
+  final DateFormat d = DateFormat('EEE MMM d, yyyy');
+
   @override
   Widget build(BuildContext context) {
+    String chartTitle;
+
+    if (_chartData?.chartDataDateRange == null ||
+        _chartData.chartDataDateRange.toDate.isAtSameMomentAs(DateTime(
+            DateTime.now().year, DateTime.now().month, DateTime.now().day))) {
+      chartTitle = "Last seven days stastistics";
+    } else {
+      chartTitle =
+          "${_chartData.chartDataDateRange.fromDate} to ${_chartData.chartDataDateRange.toDate}";
+    }
+
     return BlocBuilder<ChartBloc, ChartState>(
       builder: (context, state) {
         return Container(
@@ -78,7 +93,16 @@ class _ChartState extends State<ExpenseManagerBarChart>
                 Container(
                     height: widget.availableSpace * 0.1,
                     child: Align(
-                        alignment: Alignment.center, child: _chartTitleWidget)),
+                        alignment: Alignment.center,
+                        child: Text(
+                          chartTitle,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontFamily: 'Roboto',
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ))),
                 Expanded(
                     child: Align(
                         alignment: Alignment.center,
@@ -90,6 +114,10 @@ class _ChartState extends State<ExpenseManagerBarChart>
   }
 
   Widget _makeStateDecision(ChartState state) {
+    if (_currencySymbol == null) {
+      _currencySymbol = Repository.repository.currencySymbol;
+    }
+
     if (state is ChartDataSet) {
       if (state.chartData == null) {
         return _emptyChartWidget;
@@ -98,20 +126,13 @@ class _ChartState extends State<ExpenseManagerBarChart>
       return _buildChartBody();
     }
 
+    if (state is NewCurrencySymbol) {
+      _currencySymbol = state.currencySymbol;
+      return _buildChartBody();
+    }
+
     return _emptyChartWidget;
   }
-
-  ///made static const and class variable for performance gain
-  ///as static const properties always return the same instance
-  static const Text _chartTitleWidget = const Text(
-    'expenses chart',
-    style: TextStyle(
-      fontSize: 20,
-      fontFamily: 'OpenSans',
-      color: Colors.white,
-      fontWeight: FontWeight.bold,
-    ),
-  );
 
   static const Widget _emptyChartWidget = Text(
     "No data loaded into chart",
@@ -122,7 +143,7 @@ class _ChartState extends State<ExpenseManagerBarChart>
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Align(
         alignment: Alignment.center,
-        child: const Text("total:",
+        child: const Text("total",
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -131,9 +152,7 @@ class _ChartState extends State<ExpenseManagerBarChart>
       Expanded(
         child: Container(
           padding: EdgeInsets.all(5),
-          width: widget.availableSpace * 0.1,
-          margin: EdgeInsets.fromLTRB(
-              0, 8, widget.availableSpace * 0.035, widget.availableSpace * 0.1),
+          margin: EdgeInsets.only(bottom: 45, top: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(5)),
             border: Border.all(color: Colors.white),
@@ -141,8 +160,8 @@ class _ChartState extends State<ExpenseManagerBarChart>
           ),
           child: FittedBox(
               child: Text(
-            '${_chartData.totalAmount}',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            '$_currencySymbol${_chartData.totalAmount.toInt()}',
+            style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold),
           )),
         ),
       )
