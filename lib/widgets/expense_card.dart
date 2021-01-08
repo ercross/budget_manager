@@ -24,7 +24,7 @@ class ExpenseCard extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          "$currencySymbol${expense.amount.toString()}",
+          "$currencySymbol${expense.amount.toStringAsFixed(0)}",
           style: TextStyle(
             fontFamily: 'Roboto',
             fontSize: 16,

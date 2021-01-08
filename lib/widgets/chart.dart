@@ -1,9 +1,9 @@
-import 'package:budget_manager/models/chart_data_date_range.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 
+import '../models/chart_data_date_range.dart';
 import '../models/chart_data.dart';
 import '../repository/repository.dart';
 import '../bloc/chart/chart_bloc.dart';

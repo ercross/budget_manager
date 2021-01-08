@@ -1,12 +1,12 @@
-import 'package:budget_manager/bloc/chart/chart_event.dart';
-import 'package:budget_manager/repository/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
+import '../bloc/chart/chart_event.dart';
+import '../repository/repository.dart';
+import '../screens/expenses_screen.dart';
 import '../bloc/chart/chart_bloc.dart';
 import '../bloc/expense/expense_bloc.dart';
-import '../main.dart';
 import '../models/expense.dart';
 
 class InputFields extends StatefulWidget {
@@ -56,7 +56,7 @@ class _InputFieldsState extends State<InputFields> {
                   GestureDetector(
                       child: 
                           Text("Date",
-                              style: TextStyle(
+                              style: TextStyle( fontSize: 14,
                                   color: Colors.black87,
                                   fontWeight: FontWeight.w600))
                           ,
@@ -82,7 +82,7 @@ class _InputFieldsState extends State<InputFields> {
     final double amount = double.parse(_amountController.text, 
     //double.parse.onError
     (value){
-      Scaffold.of(HomePageBody.scaffoldBodyContext).showSnackBar(SnackBar(
+      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
         content: Text("$value is not a valid amount"),
         duration: Duration(seconds: 2),
       ));
@@ -93,8 +93,10 @@ class _InputFieldsState extends State<InputFields> {
       return;
     }
 
-    if (_selectedDate.isBefore(Repository.repository.oldestDate)) {
-      Repository.repository.setNewOldestDate(_selectedDate);
+    final selectedDateF = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    if (selectedDateF.isBefore(Repository.repository.oldestDate)) {
+      Repository.repository.setNewOldestDate(selectedDateF);
+
     }
 
     widget.expenseBloc.add(AddExpense (new Expense(

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:budget_manager/models/chart_data_date_range.dart';
+import '../../models/chart_data_date_range.dart';
 
 import '../../repository/repository.dart';
 import '../../models/chart_data.dart';

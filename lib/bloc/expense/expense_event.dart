@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../models/expense.dart';
+import '../../repository/repository.dart';
 
 abstract class ExpenseEvent extends Equatable {
 
@@ -28,13 +29,13 @@ class DeleteExpense extends ExpenseEvent{
   List<Object> get props => [id];
 }
 
-class FetchExpenses extends ExpenseEvent {
-  final List<Expense> expenses;
+class FetchExpensesFor extends ExpenseEvent {
+  final DateTime date;
 
-  const FetchExpenses(this.expenses);
+  const FetchExpensesFor(this.date);
 
   @override
-  List<Object> get props => [expenses];
+  List<Object> get props => [date];
 }
 
 class ChangeCurrencySymbol extends ExpenseEvent {

@@ -52,6 +52,7 @@ class Preferences{
   //setNewOldestDate is invoked when new expenses are added
   void setNewOldestDate (DateTime oldestDate) async {
     final int date = DateTime(oldestDate.year, oldestDate.month, oldestDate.day).millisecondsSinceEpoch;
+    _oldestDate = date;
     final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
     sharedPrefs.setInt(_Keys._oldestDate, date);
   }

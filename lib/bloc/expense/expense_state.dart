@@ -10,33 +10,31 @@ abstract class ExpenseState extends Equatable{
   List<Object> get props => [];
 }
 
-class ExpenseStateInitial extends ExpenseState{
-  
-  const ExpenseStateInitial();
-}
+class ExpenseStateInitial extends ExpenseState{}
 
 class ExpenseStateIncreased extends ExpenseState {
   final Expense expense;
+  final List<Expense> expenses;
 
-  const ExpenseStateIncreased(this.expense);
+  const ExpenseStateIncreased(this.expense, this.expenses);
 
   @override
-  List<Object> get props => [expense];
+  List<Object> get props => [expense, expenses];
 }
 
-class ExpenseStateReduced extends ExpenseState {
+class RemoveExpense extends ExpenseState {
   final int id;
 
-  const ExpenseStateReduced(this.id);
+  const RemoveExpense(this.id);
 
   @override
   List<Object> get props => [id];
 }
 
-class ExpenseStateFetched extends ExpenseState {
+class CurrentDate extends ExpenseState {
   final List<Expense> expenses;
 
-  const ExpenseStateFetched(this.expenses);
+  const CurrentDate(this.expenses);
 
   @override
   List<Object> get props => [expenses];
@@ -50,3 +48,4 @@ class ENewCurrencySymbol extends ExpenseState {
   @override
   List<Object> get props => [currencySymbol];
 }
+

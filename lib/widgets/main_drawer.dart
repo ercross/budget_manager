@@ -1,12 +1,12 @@
-import 'package:budget_manager/main.dart';
-import 'package:budget_manager/repository/db_tables.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
+import '../repository/db_tables.dart';
+import '../screens/expenses_screen.dart';
+import '../screens/search_result_screen.dart';
 import '../models/chart_data_date_range.dart';
 import '../models/expense.dart';
 import '../widgets/search.dart';
@@ -16,6 +16,7 @@ import '../bloc/chart/chart_event.dart';
 import '../bloc/expense/expense_bloc.dart';
 import '../repository/contexts_keys.dart';
 import '../currency.dart';
+import 'expense_card.dart';
 
 class MainDrawer extends StatelessWidget {
   @override
@@ -36,7 +37,7 @@ class MainDrawer extends StatelessWidget {
                 Icons.search,
                 color: Theme.of(context).primaryColor,
               ), () {
-            Search.searchExpense(ScaffGlobalKey.key.scaffold.currentContext);
+            Search().searchExpense(ScaffGlobalKey.key.scaffold.currentContext);
           }),
           _buildDrawerItem("statistics",
               Icon(Icons.bar_chart, color: Theme.of(context).primaryColor), () {
@@ -91,7 +92,27 @@ class MainDrawer extends StatelessWidget {
     Navigator.of(ctx).pop();
     final List<Expense> expenses =
         await Repository.repository.getAll(ExpenseTable.tableName);
-    BlocProvider.of<ExpenseBloc>(ctx).add(FetchExpenses(expenses));
+    Navigator.of(ctx).pushNamed(SearchResultPage.routeName, 
+        arguments: {
+          SearchResultPage.pageTitleKey: "all expenses",
+          SearchResultPage.listViewKey: _buildExpensesListView(expenses, Repository.repository.currencySymbol)
+        });
+  }
+
+  Widget _buildExpensesListView (List<Expense> expenses, String currency) {
+    return ListView.builder(
+        itemCount: expenses.length,
+        itemBuilder: (buildContext, index) {
+          return ExpenseCard(
+            expense: expenses[index],
+            currencySymbol: currency,
+            deleteExpense: (expense) {
+              expenses.remove(expenses[index]);
+              Repository.repository.delete(
+                tableName: ExpenseTable.tableName, where: "${ExpenseTable.columnId}=?", targetValues: [expenses[index].id]);
+            },
+          );
+        });
   }
 
   void _changeCurrency(BuildContext ctx) {
@@ -217,7 +238,7 @@ class MainDrawer extends StatelessWidget {
 
     if (startDate.isAfter(endDate)) {
       Navigator.of(ctx).pop();
-      Scaffold.of(HomePageBody.scaffoldBodyContext).showSnackBar(SnackBar(
+      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
         content: Text("start date must be earlier than end date"),
         duration: Duration(seconds: 2),
       ));
@@ -226,7 +247,7 @@ class MainDrawer extends StatelessWidget {
 
     if (startDate.difference(endDate) > Duration(days: 6) || startDate.difference(endDate) < Duration(days: 6)) {
       Navigator.of(ctx).pop();
-      Scaffold.of(HomePageBody.scaffoldBodyContext).showSnackBar(SnackBar(
+      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
         content: Text("Date range must be 7 days apart"),
         duration: Duration(seconds: 2),
       ));
