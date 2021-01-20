@@ -1,38 +1,42 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../bloc/chart/chart_bloc.dart';
 import '../models/chart_data_date_range.dart';
 import '../models/chart_data.dart';
 import '../repository/repository.dart';
-import '../bloc/chart/chart_bloc.dart';
-import '../bloc/chart/chart_state.dart';
-import '../bloc/chart/chart_event.dart';
 
-class ExpenseManagerBarChart extends StatefulWidget {
+///IncomeBarChart displays the statistics of incomes over the last seven month
+///Option to view daily income statistics over the last seven
+class IncomeBarChart extends StatefulWidget {
+
   final double availableSpace;
-  final Repository repository;
+  static ChartDataDateRange dateRange;
 
-  ExpenseManagerBarChart(this.availableSpace, this.repository);
+  const IncomeBarChart(this.availableSpace);
 
   @override
-  _ChartState createState() => _ChartState();
+  _IncomeBarChartState createState() => _IncomeBarChartState();
 }
 
-class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObserver {
-  
+class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObserver{
+
+  static final DateTime todaysDate = DateTime.now();
   ChartData _chartData;
-  String _currencySymbol;
+  ChartDataDateRange _dateRange = ChartDataDateRange(
+        toDate: DateTime(todaysDate.year, todaysDate.month, todaysDate.day),
+        fromDate: DateTime(todaysDate.year, todaysDate.month-6));
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    final ChartDataDateRange dateRange = widget.repository.chartDataDateRange;
-    ChartData(dateRange).setChartData().then((chartData) {
-      _chartData = chartData;
-      BlocProvider.of<ChartBloc>(context).add(BuildNewChart(chartData));
+    IncomeBarChart.dateRange = _dateRange;
+    ChartData(_dateRange, ChartType.monthly).generateChartData().then((chartData) {
+      setState (() => _chartData = chartData);
+      BlocProvider.of<ChartBloc>(context).add(BuildNewChart(ChartName.income, chartData));
     });
   }
 
@@ -44,48 +48,31 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        (Repository.repository.dateRangeAutoGen == null
-            ? true
-            : Repository.repository.dateRangeAutoGen)) {
-      final DateTime today = DateTime(
-          DateTime.now().year, DateTime.now().month, DateTime.now().day);
-      final ChartDataDateRange newDateRange = ChartDataDateRange(
-        toDate: today,
-        fromDate: today.subtract(Duration(days: 6)),
+    if (state == AppLifecycleState.resumed) {
+      _dateRange = ChartDataDateRange(
+          toDate: DateTime(DateTime.now().year, DateTime.now().month),
+          fromDate: DateTime(DateTime.now().year, DateTime.now().month-6),
       );
-      Repository.repository.setChartDataDateRange(newDateRange);
+      IncomeBarChart.dateRange = _dateRange;
     }
   }
 
-  final DateFormat d = DateFormat('EEE MMM d, yyyy');
-
   @override
   Widget build(BuildContext context) {
-    String chartTitle;
-
-    if (_chartData?.chartDataDateRange == null ||
-        _chartData.chartDataDateRange.toDate.isAtSameMomentAs(DateTime(
-            DateTime.now().year, DateTime.now().month, DateTime.now().day))) {
-      chartTitle = "Last seven days stastistics";
-    } else {
-      chartTitle =
-          "${_chartData.chartDataDateRange.fromDate} to ${_chartData.chartDataDateRange.toDate}";
-    }
-
+  
     return BlocBuilder<ChartBloc, ChartState>(
       builder: (context, state) {
         return Container(
             width: double.infinity,
             height: widget.availableSpace,
-            margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            padding: EdgeInsets.only(top: 5, bottom: 0, left: 10, right: 10),
+            margin: EdgeInsets.symmetric(vertical: 3, horizontal: 3),
+            padding: EdgeInsets.only(top: 5, bottom: 5, left: 3, right: 3),
             decoration: BoxDecoration(
               border: Border.all(
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).accentColor,
               ),
               borderRadius: BorderRadius.circular(5),
-              color: Theme.of(context).primaryColor.withOpacity(0.8),
+              color: Theme.of(context).primaryColor,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -95,7 +82,7 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
                     child: Align(
                         alignment: Alignment.center,
                         child: Text(
-                          chartTitle,
+                          "Last seven months incomes", textAlign: TextAlign.right,
                           style: TextStyle(
                             fontSize: 17,
                             fontFamily: 'Roboto',
@@ -104,42 +91,36 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
                           ),
                         ))),
                 Expanded(
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: _makeStateDecision(state)))
+                    child: _decideOn(state))
               ],
             ));
       },
     );
   }
 
-  Widget _makeStateDecision(ChartState state) {
-    if (_currencySymbol == null) {
-      _currencySymbol = Repository.repository.currencySymbol;
-    }
+  Widget _decideOn(ChartState state) {
 
-    if (state is ChartDataSet) {
-      if (state.chartData == null) {
-        return _emptyChartWidget;
-      }
+    if (state is NewChartData && state.chartName == ChartName.income) {
+      _dateRange = state.chartData.dateRange;
       this._chartData = state.chartData;
       return _buildChartBody();
     }
 
-    if (state is NewCurrencySymbol) {
-      _currencySymbol = state.currencySymbol;
+    if (state is CurrencyChanged) {
       return _buildChartBody();
     }
-
-    return _emptyChartWidget;
+    if (_chartData == null) return _emptyChart;
+    return _buildChartBody();
   }
 
-  static const Widget _emptyChartWidget = Text(
-    "No data loaded into chart",
+  static const Widget _emptyChart = Text(
+    "No income found",
     style: TextStyle(color: Colors.white, fontSize: 16),
   );
 
-  Widget _buildTotalAmountWidget() {
+  Widget _buildTotalAmount() {
+    int totalAmount = 0;
+    if (_chartData != null) totalAmount = _chartData.totalAmount.toInt();
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Align(
         alignment: Alignment.center,
@@ -160,7 +141,7 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
           ),
           child: FittedBox(
               child: Text(
-            '$_currencySymbol${_chartData.totalAmount.toInt()}',
+            '${Repository.repository.currency}$totalAmount',
             style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold),
           )),
         ),
@@ -172,7 +153,7 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: _buildTotalAmountWidget()),
+        Expanded(child: _buildTotalAmount()),
         _buildExpenseBars(),
       ],
     );
@@ -203,12 +184,12 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
           tooltipBgColor: Color.fromRGBO(171, 39, 79, 0.2),
           getTooltipItem: (BarChartGroupData group, int groupindex,
               BarChartRodData rod, int rodIndex) {
-            final double totalAmount = _chartData.dailyExpensesTotal[group.x];
+            final double totalAmount = _chartData.timeUnitTotal[group.x];
             final String date =
                 DateFormat.yMMMMd('en_US').format(_chartData.dates[group.x]);
 
             //return 0 is either divisor or dividend is zero
-            final double percentage = _chartData.percentageSpentPerDay[group.x];
+            final double percentage = _chartData.percentPerTimeUnit[group.x];
             return BarTooltipItem(
                 "$date \n amount spent: $totalAmount \n % of total amount: $percentage%",
                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
@@ -222,23 +203,27 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
         leftTitles: SideTitles(showTitles: false),
         bottomTitles: SideTitles(
             showTitles: true,
+            getTextStyles: (_) => TextStyle(
+              color: Colors.white, 
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic),
             margin: 20,
             getTitles: (double value) {
               switch (value.toInt()) {
                 case 0:
-                  return _chartData.weekdaysNames[0];
+                  return _chartData.barTitles[0];
                 case 1:
-                  return _chartData.weekdaysNames[1];
+                  return _chartData.barTitles[1];
                 case 2:
-                  return _chartData.weekdaysNames[2];
+                  return _chartData.barTitles[2];
                 case 3:
-                  return _chartData.weekdaysNames[3];
+                  return _chartData.barTitles[3];
                 case 4:
-                  return _chartData.weekdaysNames[4];
+                  return _chartData.barTitles[4];
                 case 5:
-                  return _chartData.weekdaysNames[5];
+                  return _chartData.barTitles[5];
                 case 6:
-                  return _chartData.weekdaysNames[6];
+                  return _chartData.barTitles[6];
                 default:
                   return '';
               }
@@ -250,22 +235,22 @@ class _ChartState extends State<ExpenseManagerBarChart> with WidgetsBindingObser
       BarChartRodData(
         y: yAxisValue,
         colors: [Colors.grey],
-        width: 13,
+        width: 10,
         backDrawRodData: BackgroundBarChartRodData(
-            colors: [Colors.white70], show: true, y: 100),
+            colors: [Colors.white], show: true, y: 100),
       )
     ]);
   }
 
   List<BarChartGroupData> _makeBarGroups() {
     return [
-      _makeAbarRod(0, _chartData.percentageSpentPerDay[0]),
-      _makeAbarRod(1, _chartData.percentageSpentPerDay[1]),
-      _makeAbarRod(2, _chartData.percentageSpentPerDay[2]),
-      _makeAbarRod(3, _chartData.percentageSpentPerDay[3]),
-      _makeAbarRod(4, _chartData.percentageSpentPerDay[4]),
-      _makeAbarRod(5, _chartData.percentageSpentPerDay[5]),
-      _makeAbarRod(6, _chartData.percentageSpentPerDay[6]),
+      _makeAbarRod(0, _chartData.percentPerTimeUnit[0]),
+      _makeAbarRod(1, _chartData.percentPerTimeUnit[1]),
+      _makeAbarRod(2, _chartData.percentPerTimeUnit[2]),
+      _makeAbarRod(3, _chartData.percentPerTimeUnit[3]),
+      _makeAbarRod(4, _chartData.percentPerTimeUnit[4]),
+      _makeAbarRod(5, _chartData.percentPerTimeUnit[5]),
+      _makeAbarRod(6, _chartData.percentPerTimeUnit[6]),
     ];
   }
 }

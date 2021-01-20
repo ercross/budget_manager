@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trackIt/repository/repository.dart';
 
-import '../models/expense.dart';
+import '../models/budget.dart';
 
-class ExpenseCard extends StatelessWidget {
-  final Expense expense;
-  final Function (Expense expense) deleteExpense ;
+class BudgetCard extends StatelessWidget {
+  final Budget budget;
+  final Function (Budget budget) delete ;
 
-  ExpenseCard({@required this.expense, @required this.deleteExpense});
+  BudgetCard({@required this.budget, @required this.delete});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class ExpenseCard extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          "${Repository.repository.currency}${expense.amount.toStringAsFixed(0)}",
+          "${Repository.repository.currency}${budget.amount.toStringAsFixed(0)}",
           style: TextStyle(
             fontFamily: 'Roboto',
             fontSize: 16,
@@ -35,15 +35,20 @@ class ExpenseCard extends StatelessWidget {
       ),
     );
 
+    final List<String> typeText = ["Day", "Week", "Month"];
     final Text title = Text(
-      expense.title,
+      typeText[budget.type.index],
       style: TextStyle(
-          fontWeight: FontWeight.bold, fontSize: 17, color: Colors.black),
+          fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black),
     );
 
-    final Text date = Text(DateFormat('EEE MMM d, yyyy').format(expense.date),
+    final String startDate = DateFormat('EEE MMM d, yyyy').format(budget.startDate);
+    final String endDate = DateFormat('EEE MMM d, yyyy').format(budget.endDate);
+    final String dateText = budget.startDate.isAtSameMomentAs(budget.endDate) ? startDate : "$startDate - $endDate";
+
+    final Text date = Text(dateText,
         style: TextStyle(
-            fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black87));
+            fontWeight: FontWeight.w500, fontSize: 15, color: Colors.black87));
 
     return Card(
       elevation: 10,
@@ -62,7 +67,7 @@ class ExpenseCard extends StatelessWidget {
         trailing: IconButton(
             icon: Icon(Icons.delete),
             color: Colors.deepOrange,
-            onPressed: () => deleteExpense(expense)),
+            onPressed: () => delete(budget)),
       ),
     );
   }

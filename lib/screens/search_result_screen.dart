@@ -6,6 +6,7 @@ class SearchResultPage extends StatelessWidget {
   static const String listViewKey = "listView";
   static const String pageTitleKey = "pageTitle";
 
+  ///SearchResultPage takes the widget to display, usually a listView and the page title
   const SearchResultPage();
 
   @override
@@ -18,7 +19,9 @@ class SearchResultPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(pageTitle),
       ),
-      body: listView,
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        child: listView),
     );
   }
 }

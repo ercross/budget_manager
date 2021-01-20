@@ -1,4 +1,4 @@
-# budget_manager
+# trackIt
 
 track your expenses, manage your budget
 

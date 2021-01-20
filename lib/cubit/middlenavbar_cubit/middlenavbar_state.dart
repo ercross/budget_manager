@@ -22,11 +22,11 @@ class MiddleNavBarInitial extends MiddleNavBarState {
 }
 
 class NewMiddleNavBar extends MiddleNavBarState {
-  
+  final MiddleNavBarOn page;  
   final MiddleNavBar newMiddleNavBar;
 
-  const NewMiddleNavBar(this.newMiddleNavBar);
+  const NewMiddleNavBar(this.newMiddleNavBar, this.page);
 
   @override
-  List<Object> get props => [newMiddleNavBar];
+  List<Object> get props => [newMiddleNavBar, page];
 }

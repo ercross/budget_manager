@@ -1,39 +1,36 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:trackIt/cubit/middlenavbar_cubit.dart';
 
+import '../cubit/middlenavbar_cubit/middlenavbar_cubit.dart';
+import '../screens/expenses_screen.dart';
 import '../repository/db_tables.dart';
 import '../repository/repository.dart';
-import '../bloc/chart/chart_event.dart';
-import '../bloc/chart/chart_bloc.dart';
+import '../bloc/chart/chart_bloc.dart' as chart;
 import '../models/expense.dart';
 import '../bloc/expense/expense_bloc.dart';
 import './expense_card.dart';
 import 'middle_nav_bar.dart';
 
-class ExpenseList extends StatefulWidget {
-  const ExpenseList();
+class ExpenseTiles extends StatefulWidget {
+  const ExpenseTiles();
 
   @override
-  _ExpenseList createState() => _ExpenseList();
+  _ExpenseTiles createState() => _ExpenseTiles();
 }
 
-class _ExpenseList extends State<ExpenseList> with WidgetsBindingObserver{
+class _ExpenseTiles extends State<ExpenseTiles> with WidgetsBindingObserver{
 
-  String _currencySymbol = Repository.repository.currencySymbol;
-  
-  List<Expense> expenses;
+  List<Expense> expenses = List<Expense>();
 
   @override
   void initState() { 
     super.initState();
-    WidgetsBinding.instance.addObserver(this);  
+    WidgetsBinding.instance.addObserver(this);
     final DateTime todaysDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    Repository.repository.getAll(ExpenseTable.tableName, where: "${ExpenseTable.columnDate}=?", whereArgs: [todaysDate.millisecondsSinceEpoch])
-      .then((todaysExpenses){
+    Repository.repository.fetch(ExpenseTable.tableName, where: "${ExpenseTable.columnDate}=?", whereArgs: [todaysDate.millisecondsSinceEpoch]).then((maps){
         setState(() {
-          expenses = todaysExpenses;          
+          expenses = Expense.fromMaps(maps);
+          BlocProvider.of<MiddleNavBarCubit>(ExpensesPageBody.expensesScreenContext).emitInitial(MiddleNavBarOn.expensePage);          
         });
     });
   }
@@ -49,18 +46,18 @@ class _ExpenseList extends State<ExpenseList> with WidgetsBindingObserver{
     if (state == AppLifecycleState.resumed) {
       final DateTime todaysDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
       setState ( () {
-    Repository.repository.getAll(ExpenseTable.tableName, where: "${ExpenseTable.columnDate}=?", whereArgs: [todaysDate.millisecondsSinceEpoch])
-      .then((todaysExpenses){expenses = todaysExpenses;});
+    Repository.repository.fetch(ExpenseTable.tableName, where: "${ExpenseTable.columnDate}=?", whereArgs: [todaysDate.millisecondsSinceEpoch]).then((maps) => expenses = Expense.fromMaps(maps));
     });
     }
   }
 
-  final Widget _noExpensesAdded = const Center(
+  final Widget _noExpensesAdded = Center(
     child: Text(
       "No Expenses Added",
       style: TextStyle(
           fontSize: 20,
-          color: Color.fromRGBO(171, 39, 79, 0.4),
+          color: Colors.green.withOpacity(0.5),
+          fontStyle: FontStyle.italic,
           fontWeight: FontWeight.bold),
     ),
   );
@@ -74,30 +71,36 @@ class _ExpenseList extends State<ExpenseList> with WidgetsBindingObserver{
               return _buildListView(expenses);
             }
 
-            if (state is ENewCurrencySymbol) {
-              _currencySymbol = state.currencySymbol;
-              Repository.repository.setCurrencySymbol(state.currencySymbol);
+            if (state is CurrencyChanged) {
               return _buildListView(expenses);
             }
 
             if (state is ExpenseStateIncreased) {
-              final currentDate = DateTime(MiddleNavBarCubit.currentDate.year, 
-                                    MiddleNavBarCubit.currentDate.month, MiddleNavBarCubit.currentDate.day);
               final expenseDate = DateTime(state.expense.date.year, state.expense.date.month, state.expense.date.day);
 
-              if (currentDate.isAtSameMomentAs(expenseDate)) {
-                expenses == null ? expenses = [state.expense] : expenses.add(state.expense);
+              if (MiddleNavBarCubit.expensePageDateF.isAtSameMomentAs(expenseDate)) {
+
+                //TODO: This is a fix for a bug encountered that causes income added to be readded again 
+                //once a swipe is made off the page and back to the page. Find the problem, rather than this hack
+                if (expenses.isNotEmpty) expenses.removeWhere((income) { return
+                  income.amount == state.expense.amount
+                  && income.date == state.expense.date
+                  && income.title == state.expense.title;} );
+                expenses.add(state.expense);
                 return _buildListView(expenses); 
               }
               else {
                 expenses = state.expenses;
                 final DateTime todaysDateF = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-                BlocProvider.of<MiddleNavBarCubit>(context).emitNew(MiddleNavBar(
-                  currentDate: state.expense.date,
-                  enableOldestDateButton: Repository.repository.oldestDate.isBefore(expenseDate),
-                  enablePreviousDayButton: expenseDate.subtract(Duration(days: 1)).isAfter(Repository.repository.oldestDate),
-                  enableNextDayButton: expenseDate.add(Duration(days: 1)).isBefore(todaysDateF),
-                  enableTodayButton: expenseDate.isBefore(todaysDateF),));  
+                BlocProvider.of<MiddleNavBarCubit>(context).emitNew(
+                  MiddleNavBar(
+                    oldestDate: Repository.repository.oldestExpenseDate,
+                    currentDate: state.expense.date,
+                    enableOldestDateButton: Repository.repository.oldestExpenseDate.isBefore(expenseDate),
+                    enablePreviousDayButton: expenseDate.subtract(Duration(days: 1)).isAfter(Repository.repository.oldestExpenseDate),
+                    enableNextDayButton: expenseDate.add(Duration(days: 1)).isBefore(todaysDateF),
+                    enableTodayButton: expenseDate.isBefore(todaysDateF),),
+                  MiddleNavBarOn.expensePage);  
                   return _buildListView(expenses);
               }
             }
@@ -122,14 +125,13 @@ class _ExpenseList extends State<ExpenseList> with WidgetsBindingObserver{
           return ExpenseCard(
             expense: expenses[index],
             deleteExpense: _deleteExpense,
-            currencySymbol: _currencySymbol,
           );
         });
   }
 
   void _deleteExpense(Expense expense) {
     BlocProvider.of<ExpenseBloc>(context).add(DeleteExpense(expense.id));
-    BlocProvider.of<ChartBloc>(context)
-        .add(AddOrRemoveExpenseFromChart(expense));
+    BlocProvider.of<chart.ChartBloc>(context)
+        .add(chart.ModifyChart(chart.ChartName.expense, expense));
   }
 }

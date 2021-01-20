@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:trackIt/repository/repository.dart';
 
-import '../models/expense.dart';
+import '../models/income.dart';
+import '../repository/repository.dart';
 
-class ExpenseCard extends StatelessWidget {
-  final Expense expense;
-  final Function (Expense expense) deleteExpense ;
+class IncomeCard extends StatelessWidget {
+  final Income income;
+  final Function (Income income) delete ;
 
-  ExpenseCard({@required this.expense, @required this.deleteExpense});
+  IncomeCard({@required this.income, @required this.delete});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class ExpenseCard extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          "${Repository.repository.currency}${expense.amount.toStringAsFixed(0)}",
+          "${Repository.repository.currency}${income.amount.toStringAsFixed(0)}",
           style: TextStyle(
             fontFamily: 'Roboto',
             fontSize: 16,
@@ -35,13 +35,15 @@ class ExpenseCard extends StatelessWidget {
       ),
     );
 
-    final Text title = Text(
-      expense.title,
-      style: TextStyle(
-          fontWeight: FontWeight.bold, fontSize: 17, color: Colors.black),
+    final Widget source = Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text("source: ", style: TextStyle(fontSize: 10, color: Colors.grey, fontStyle: FontStyle.italic)),
+        Text(income.source, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.black))
+        ],
     );
 
-    final Text date = Text(DateFormat('EEE MMM d, yyyy').format(expense.date),
+    final Text date = Text(DateFormat('EEE MMM d, yyyy').format(income.date),
         style: TextStyle(
             fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black87));
 
@@ -57,12 +59,12 @@ class ExpenseCard extends StatelessWidget {
         contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
         enabled: true,
         leading: amount,
-        title: title,
+        title: source,
         subtitle: date,
         trailing: IconButton(
             icon: Icon(Icons.delete),
             color: Colors.deepOrange,
-            onPressed: () => deleteExpense(expense)),
+            onPressed: () => delete(income)),
       ),
     );
   }

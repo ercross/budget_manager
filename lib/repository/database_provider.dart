@@ -1,7 +1,7 @@
 part of 'repository.dart';
 
 class DatabaseProvider {
-  static const String _databaseName = "expenses.db";
+  static const String _databaseName = "trackIt.db";
   static const int _databaseVersion = 1;
 
   DatabaseProvider._();
@@ -21,13 +21,18 @@ class DatabaseProvider {
     String dbPath = await getDatabasesPath();
     return await openDatabase(
       join(dbPath, _databaseName),
-      onCreate: (Database database, int version) => ExpenseTable.create(database, version),
+      onCreate: (Database database, int version) { 
+        ExpenseTable.create(database, version);
+        IncomeTable.create(database, version);
+        BudgetTable.create(database, version);
+        ReportTable.create(database, version);
+      },
       version: _databaseVersion);
   }
 
-  Future<void> insert (String tableName, Expense expense) async {
+  Future<void> insert (String tableName, Map<String, dynamic> item) async {
     final Database db = await _getDatabaseDriver();
-    await db.insert(tableName, expense.toMap());
+    await db.insert(tableName, item);
   }
 
   ///Target rows are specified through where and whereArgs.
@@ -39,39 +44,23 @@ class DatabaseProvider {
     await db.delete (tableName, where: where, whereArgs: targetValues);
   }
 
-  Future<void> update (String tableName, int id, Expense expense) async {
-    final Database db = await _getDatabaseDriver();
-    await db.update (tableName, expense.toMap(), where: "id=?", whereArgs: [id]);
-  }
-
   ///getAll fetches all rows of the database or fetches item specified through where and whereArgs
   ///if where and whereArgs are null, the whole table item is returned
   ///if passing date in whereArgs, ensure to convert time to millisecondsSinceEpoch
-  Future<List<Expense>> getAll (String tableName, {String where, List<dynamic> whereArgs}) async {
+  Future<List<Map<String, dynamic>>> fetch (String tableName, {String where, List<dynamic> whereArgs}) async {
     final Database db = await _getDatabaseDriver();
-    List<Map<String, dynamic>> maps;
-    maps = await db.query(tableName, where: where, whereArgs: whereArgs);
-    final List<Expense> expenses = List<Expense>();
-    maps.forEach((map) { expenses.add(Expense.fromMap(map)); });
-    return expenses;
+    return await db.query(tableName, where: where, whereArgs: whereArgs);
   }
 
   ///whereArgs is a list of occurrence to find on each row
   ///where shoul be formatted like so where: "id=?" if the search is to be done by id 
-  Future<List<List<Expense>>> batchGet (String tableName, String where, List<DateTime> whereArgs) async {
+  Future<List<List<Map<String, dynamic>>>> batchFetch (String tableName, String where, List<DateTime> whereArgs) async {
     final Database db = await _getDatabaseDriver();
     final Batch batch = db.batch();
-    List<List<Expense>> expenses = List<List<Expense>>();
-    List<Expense> dailyExpense = List<Expense>();
     for (int i=0; i<whereArgs.length; i++) {
       batch.query(tableName, where: where, whereArgs: [whereArgs[i].millisecondsSinceEpoch]);
     }
-    final maps = (await batch.commit(noResult: false)).cast<List<Map<String, dynamic>>>();
-    for(int i=0; i<maps.length; i++) {
-      maps[i].forEach((map) { dailyExpense.add(Expense.fromMap(map)); });
-      expenses.add(dailyExpense);
-    }
-    return expenses;
+    return (await batch.commit(noResult: false)).cast<List<Map<String, dynamic>>>();
   }
 
   Future<void> close() async => await _databaseDriver.close();

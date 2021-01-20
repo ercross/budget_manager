@@ -12,6 +12,9 @@ abstract class ExpenseState extends Equatable{
 
 class ExpenseStateInitial extends ExpenseState{}
 
+///ExpenseStateIncreased is yielded when a new expense is added to trackIt
+///if expense.date.isAtTheSameMomentAs(MiddleNavBarCubit.expensePageDate), then expenses is null
+///otherwise, expenses contains expenses entered for expense.date is generated
 class ExpenseStateIncreased extends ExpenseState {
   final Expense expense;
   final List<Expense> expenses;
@@ -40,12 +43,12 @@ class CurrentDate extends ExpenseState {
   List<Object> get props => [expenses];
 }
 
-class ENewCurrencySymbol extends ExpenseState {
-  final String currencySymbol;
+class CurrencyChanged extends ExpenseState {
+  final String currency;
 
-  const ENewCurrencySymbol(this.currencySymbol);
+  const CurrencyChanged(this.currency);
 
   @override
-  List<Object> get props => [currencySymbol];
+  List<Object> get props => [currency];
 }
 

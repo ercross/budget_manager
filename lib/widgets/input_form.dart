@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:trackIt/bloc/income/income_bloc.dart';
+import 'package:trackIt/cubit/budget/budget_cubit.dart';
+import 'package:trackIt/models/budget.dart';
+import 'package:trackIt/models/income.dart';
 
-import '../bloc/chart/chart_event.dart';
 import '../repository/repository.dart';
 import '../screens/expenses_screen.dart';
 import '../bloc/chart/chart_bloc.dart';
@@ -11,9 +14,18 @@ import '../models/expense.dart';
 
 class InputFields extends StatefulWidget {
   final ExpenseBloc expenseBloc;
+  final IncomeBloc incomeBloc;
   final ChartBloc chartBloc;
+  final BudgetCubit budgetCubit;
+  final int pageNumber;
 
-  const InputFields(this.expenseBloc, this.chartBloc);
+
+  const InputFields({
+    @required this.expenseBloc,
+    @required this.incomeBloc,
+    @required this.chartBloc,
+    @required this.pageNumber,
+    @required this.budgetCubit});
 
   @override
   _InputFieldsState createState() => _InputFieldsState();
@@ -24,7 +36,26 @@ class _InputFieldsState extends State<InputFields> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _selectedDateContr = TextEditingController();
-  DateTime _selectedDate;
+  DateTime _selectedDateF;
+  
+  @override
+  Widget build(BuildContext context) {
+    return _decideBasedOnPage();
+  }
+
+  Widget _decideBasedOnPage() {
+    //code for cases 2 and 3 are contained in the expensePage widget 
+    switch(widget.pageNumber) {
+      case 0: 
+        return _buildForm(context);
+        break;
+      case 1 :
+        return _buildForm(context);
+        break; 
+      default:
+        return Center(child: Text("Error building input form"));
+    }
+  }
 
   Widget buildTextField (String labelText, TextEditingController _contr) {
     return TextField(
@@ -37,9 +68,21 @@ class _InputFieldsState extends State<InputFields> {
                   _contr.text = inputValue;
                 },
               );}
-              
-  @override
-  Widget build(BuildContext context) {
+
+  Widget _buildForm(BuildContext context) {
+    String okButtonText;
+    String upperBoxLabel;
+
+    switch (widget.pageNumber) {
+      case 0: 
+        upperBoxLabel = "title" ;
+        okButtonText = "Add Expense";
+        break;
+      case 1: 
+         upperBoxLabel = "source";
+         okButtonText = "Add Income";
+         break;
+    }
     return Container(
         padding: EdgeInsetsDirectional.only(
             bottom: MediaQuery.of(context).viewInsets.bottom + 15,//start: 10,
@@ -48,7 +91,7 @@ class _InputFieldsState extends State<InputFields> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              buildTextField("title", _titleController),
+              buildTextField(upperBoxLabel, _titleController),
               buildTextField("amount", _amountController),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -69,56 +112,67 @@ class _InputFieldsState extends State<InputFields> {
                 alignment: Alignment.centerRight,
                 child: RaisedButton(
                   elevation: 8,
-                  child: Text("Add Expense"),
+                  child: Text(okButtonText),
                   textColor: Theme.of(context).primaryColor,
-                  onPressed: () => addNewExpense(context),
+                  onPressed: () {
+                    addNewTrackitItem(context);
+                  } 
                 ),
               )
             ]));
   }
 
-  void addNewExpense(BuildContext context) {
+  void addNewTrackitItem(BuildContext context) {
     final String title = _titleController.text;
     final double amount = double.parse(_amountController.text, 
     //double.parse.onError
     (value){
       Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
         content: Text("$value is not a valid amount"),
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: 4),
       ));
       return null;
     });
     
-    if (title == null || amount == null || _selectedDate == null) {
+    if (title == null || amount == null || _selectedDateF == null) {
       return;
     }
 
-    final selectedDateF = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
-    if (selectedDateF.isBefore(Repository.repository.oldestDate)) {
-      Repository.repository.setNewOldestDate(selectedDateF);
+    switch (widget.pageNumber) {
+      case 0:
+        if (_selectedDateF.isBefore(Repository.repository.oldestExpenseDate)) {
+          Repository.repository.setOldestExpenseDate(_selectedDateF);
+        }
 
-    }
+        widget.expenseBloc.add(AddExpense (new Expense(
+          title: title,
+          amount: amount,
+          date: _selectedDateF,
+        )));
+        widget.chartBloc.add( ModifyChart (ChartName.expense, new Expense(
+          title: title,
+          amount: amount,
+          date: _selectedDateF,
+        )));
+        break;
+      
+      case 1: 
+        if (_selectedDateF.isBefore(Repository.repository.oldestIncomeDate)) {
+          Repository.repository.setOldestIncomeDate(_selectedDateF);
+        }
 
-    widget.expenseBloc.add(AddExpense (new Expense(
-      title: title,
-      amount: amount,
-      date: _selectedDate,
-    )));
-    widget.chartBloc.add( AddOrRemoveExpenseFromChart (new Expense(
-      title: title,
-      amount: amount,
-      date: _selectedDate,
-    )));
+        widget.incomeBloc.add(AddIncome( Income(
+          source: title,
+          amount: amount,
+          date: _selectedDateF,
+        )));
+        widget.chartBloc.add( ModifyChart (ChartName.income, null, income: Income(
+          source: title,
+          amount: amount,
+          date: _selectedDateF,
+        )));
+        break;
+    } 
     Navigator.of(context).pop();
-  }
-
-  void showDatePicker() {
-    DatePicker.showDatePicker(context,
-        showTitleActions: true,
-        currentTime: DateTime.now(), 
-        onConfirm: (selectedDate) {
-      _selectedDate = selectedDate;
-      _selectedDateContr.text = DateFormat("dd/MM/yyyy").format(_selectedDate);
-    });
   }
 }

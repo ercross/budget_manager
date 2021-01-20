@@ -1,6 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-import '../../models/chart_data.dart';
+part of './chart_bloc.dart';
 
 abstract class ChartState extends Equatable {
   const ChartState();
@@ -13,24 +11,15 @@ class ChartInitial extends ChartState {
   const ChartInitial();
 }
 
-class EmptyChart extends ChartState {
-  const EmptyChart();
-}
-
-class ChartDataSet extends ChartState {
+class NewChartData extends ChartState {
+  final ChartName chartName;
   final ChartData chartData;
 
-  const ChartDataSet(this.chartData);
+  const NewChartData(this.chartName, this.chartData);
 
   @override
   List<Object> get props => [chartData];
 }
 
-class NewCurrencySymbol extends ChartState {
-  final String currencySymbol;
-
-  const NewCurrencySymbol(this.currencySymbol);
-
-  @override
-  List<Object> get props => [currencySymbol];
+class CurrencyChanged extends ChartState {
 }

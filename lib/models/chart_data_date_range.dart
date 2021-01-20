@@ -19,8 +19,8 @@ class ChartDataDateRange extends Equatable{
 
   Map<String, dynamic> toMap() {
     return {
-      "fromDate": DateTime(fromDate.year, fromDate.month, fromDate.day).toString(),
-      "toDate": DateTime(toDate.year, toDate.month, toDate.day).toString(),
+      "fromDate": fromDate.toString(),
+      "toDate": toDate.toString(),
     };
   }
 

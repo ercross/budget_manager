@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -7,8 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'db_tables.dart';
-import '../models/chart_data_date_range.dart';
-import '../models/expense.dart';
 
 part 'database_provider.dart';
 part 'preferences.dart';
@@ -23,8 +20,8 @@ class Repository {
   final DatabaseProvider _db = DatabaseProvider.databaseProvider;
   final Preferences _sharedPrefs = Preferences.preferences;
 
-  Future<void> insert (String tableName, Expense expense) async {
-    await _db.insert(tableName, expense);
+  Future<void> insert (String tableName, Map<String,dynamic> item) async {
+    await _db.insert(tableName, item);
   }
 
   ///passing in null values for where and targetValues deletes the whole table specified by tableName
@@ -32,38 +29,37 @@ class Repository {
     await _db.delete(tableName: tableName, where: where, targetValues: targetValues);
   }
 
-  Future<void> update (String tableName, int id, Expense expense) async {
-    await _db.update(tableName, id, expense);
-  }
-
   ///if whereArgs contains instance of DateTime, ensure to obtain the equivalent in millisecondSinceEpoch
-  Future<List<Expense>> getAll (String tableName, {String where, List<dynamic> whereArgs}) async {
-    return await _db.getAll(tableName, where: where, whereArgs: whereArgs);
+  ///cast return value to appropriate dataType
+  Future<List<Map<String, dynamic>>> fetch (String tableName, {String where, List<dynamic> whereArgs}) async {
+    return await _db.fetch(tableName, where: where, whereArgs: whereArgs);
   }
 
-  Future<List<List<Expense>>> batchGet (String tableName, String where, List<DateTime> whereArgs) async {
-    return await _db.batchGet(tableName, where, whereArgs);
+  ///batchGet fetches items from table named @param tableName.
+  ///If needed items can be fetched in one operation, please use getAll()
+  Future<List<List<Map<String, dynamic>>>> batchFetch (String tableName, String where, List<DateTime> whereArgs) async {
+    return await _db.batchFetch(tableName, where, whereArgs);
   }
 
   //******************************************shared preferences********************************************************
-  ChartDataDateRange get chartDataDateRange => _sharedPrefs.chartDataDateRange;
-  bool get dateRangeAutoGen => _sharedPrefs.dateRangeAutoGen;
-  String get currencySymbol => _sharedPrefs.currencySymbol;
-  DateTime get oldestDate => _sharedPrefs.oldestDate;
+  String get currency => _sharedPrefs.currency;
+  DateTime get oldestExpenseDate => _sharedPrefs.oldestExpenseDate;
+  DateTime get oldestIncomeDate => _sharedPrefs.oldestIncomeDate;
+  DateTime get lastReportDate => _sharedPrefs.lastReportDate;
 
-  Future<void> setNewOldestDate (DateTime oldestDate) async {
-    _sharedPrefs.setNewOldestDate(oldestDate);
+  Future<void> setOldestExpenseDate (DateTime oldestDate) async {
+    _sharedPrefs.setOldestExpenseDate(oldestDate);
   }
 
-  Future<void> setChartDataDateRange(ChartDataDateRange chartDataDateRange) async {
-    await _sharedPrefs.setChartDataDateRange(chartDataDateRange);
+  Future<void> setOldestIncomeDate (DateTime oldestDate) async {
+    _sharedPrefs.setOldestIncomeDate(oldestDate);
   }
 
-  Future setCurrencySymbol (String newSymbol ) async {
-    await _sharedPrefs.setCurrencySymbol(newSymbol);
+  Future setNewCurrency (String currency ) async {
+    await _sharedPrefs.setCurrency(currency);
   }
 
-  Future toggleDateRangeAutoGen (bool autoGen) async {
-    await _sharedPrefs.toggleDateRangeAutoGen(autoGen);
+  void setLastReportDate (DateTime lastReportDate) {
+    _sharedPrefs.setLastReportDate(lastReportDate);
   }
 }

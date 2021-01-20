@@ -1,12 +1,19 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import '../../models/chart_data_date_range.dart';
+import 'package:equatable/equatable.dart';
+import 'package:trackIt/models/income.dart';
+import 'package:trackIt/widgets/income_bar_chart.dart';
 
-import '../../repository/repository.dart';
+import '../../widgets/expense_bar_chart.dart';
+import '../../models/expense.dart';
 import '../../models/chart_data.dart';
-import './chart_event.dart';
-import './chart_state.dart';
+import '../../models/chart_data_date_range.dart';
+import '../../repository/repository.dart';
+part './chart_event.dart';
+part './chart_state.dart';
+
+enum ChartName {expense, income}
 
 class ChartBloc extends Bloc<ChartEvent, ChartState> {
 
@@ -15,30 +22,39 @@ class ChartBloc extends Bloc<ChartEvent, ChartState> {
   @override
   Stream<ChartState> mapEventToState(ChartEvent event) async* {
 
-    if (event is ChangeChartCurrencySymbol) {
-      yield NewCurrencySymbol(event.currencySymbol);
-    }
-    
-    if( event is BuildEmptyChart) {
-      yield EmptyChart();
+    if (event is ChangeCurrency) {
+      Repository.repository.setNewCurrency(event.currency);
+      yield CurrencyChanged();
     }
 
-    if (event is AddOrRemoveExpenseFromChart) {
-      final DateTime date = DateTime(event.expense.date.year, event.expense.date.month, event.expense.date.day);
-      final ChartDataDateRange dateRange = Repository.repository.chartDataDateRange;
-      if (_dateIsContainedInRange(dateRange, date)) {
-        final ChartData chartData = await ChartData(dateRange).setChartData();
-        yield ChartDataSet(chartData);
+    if (event is ModifyChart) {
+
+      switch (event.chartName) {
+        case ChartName.expense:
+          final ChartDataDateRange dateRange = ExpenseBarChart.dateRange;
+          if (_dateIsContainedInRange(dateRange, event.expense.date)) {
+            final ChartData chartData = await ChartData(dateRange, ChartType.daily).generateChartData();
+            yield NewChartData(ChartName.expense, chartData);
+          }
+          break;
+        case ChartName.income:
+          final ChartDataDateRange d = IncomeBarChart.dateRange;
+          if (d.fromDate.month <= event.income.date.month && event.income.date.month <= d.toDate.month) {
+            final ChartData chartData = await ChartData(d, ChartType.monthly).generateChartData();
+            yield NewChartData(ChartName.income, chartData);
+          }
       }
+      
+      
     }
 
     if (event is BuildNewChart) {
-      yield ChartDataSet(event.chartData);
+      yield NewChartData(ChartName.expense, event.chartData);
     }
 
-    if (event is GetNewChartData) {
-      final newChartData = await ChartData(event.chartDataDateRange).setChartData();
-      yield ChartDataSet(newChartData);
+    if (event is GenerateNewData) {
+      final newChartData = await ChartData(event.chartDataDateRange, ChartType.daily).generateChartData();
+      yield NewChartData(ChartName.expense, newChartData);
     }
   }
 

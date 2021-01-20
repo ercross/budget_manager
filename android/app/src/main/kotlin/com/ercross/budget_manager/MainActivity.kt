@@ -1,4 +1,4 @@
-package com.ercross.budget_manager
+package com.ercross.trackIt
 
 import io.flutter.embedding.android.FlutterActivity
 

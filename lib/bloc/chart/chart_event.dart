@@ -1,8 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-import '../../models/expense.dart';
-import '../../models/chart_data.dart';
-import '../../models/chart_data_date_range.dart';
+part of './chart_bloc.dart';
 
 abstract class ChartEvent extends Equatable {
 
@@ -12,41 +8,42 @@ abstract class ChartEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class BuildEmptyChart extends ChartEvent {
-}
-
 class BuildNewChart extends ChartEvent {
+  final ChartName chartName;
   final ChartData chartData;
 
-  const BuildNewChart(this.chartData);
+  const BuildNewChart(this.chartName, this.chartData);
 
   @override
   List<Object> get props => [chartData];
 }
 
-class AddOrRemoveExpenseFromChart extends ChartEvent {
+class ModifyChart extends ChartEvent {
+  final ChartName chartName;
   final Expense expense;
+  final Income income;
 
-  const AddOrRemoveExpenseFromChart(this.expense);
+  const ModifyChart(this.chartName, this.expense, {this.income});
 
   @override
-  List<Object> get props => [expense];
+  List<Object> get props => [chartName, expense, income];
 }
 
-class GetNewChartData extends ChartEvent {
+class GenerateNewData extends ChartEvent {
+  final ChartName chartName;
   final ChartDataDateRange chartDataDateRange;
 
-  const GetNewChartData(this.chartDataDateRange);
+  const GenerateNewData(this.chartName, this.chartDataDateRange);
 
   @override
   List<Object> get props => [chartDataDateRange];
 }
 
-class ChangeChartCurrencySymbol extends ChartEvent {
-  final String currencySymbol;
+class ChangeCurrency extends ChartEvent {
+  final String currency;
 
-  const ChangeChartCurrencySymbol(this.currencySymbol);
+  const ChangeCurrency(this.currency);
 
   @override
-  List<Object> get props => [currencySymbol];
+  List<Object> get props => [currency];
 }

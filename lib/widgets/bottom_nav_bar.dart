@@ -26,7 +26,7 @@ class BottomNavBar extends StatelessWidget {
       unselectedFontSize: 13,
       elevation: 16,
       selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.grey,
+      unselectedItemColor: Colors.white60,
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.money_off,),
@@ -41,8 +41,8 @@ class BottomNavBar extends StatelessWidget {
           label: "budgets",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.search,),
-          label: "search",
+          icon: Icon(Icons.report,),
+          label: "reports",
         )
       ],
     );
