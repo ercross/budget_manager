@@ -9,40 +9,33 @@ class Expense extends Equatable{
   final double amount;
   final DateTime date;
 
-  //These fields are added to make it easy to obtain expenses added in certain year and months
-  final DateTime monthAdded;
-  final DateTime yearAdded;
+  ///yearAdded is this expense was added to trackit
+  final int yearAdded;
 
   Expense ({
-    this.id,
     @required this.title,
     @required this.amount,
     @required this.date
-  }) : monthAdded = DateTime(date.year, date.month), 
-      yearAdded = DateTime(date.year);
+  }) : this.id = DateTime.now().millisecondsSinceEpoch, yearAdded = date.year;
 
   @override
-  List<Object> get props => [id, title, amount, date, monthAdded, yearAdded];
+  List<Object> get props => [id, title, amount, date, yearAdded];
 
   Expense.fromMap(Map<String, dynamic> map) :
     id = map[ExpenseTable.columnId],
     title = map[ExpenseTable.columnTitle],
     amount = map[ExpenseTable.columnAmount],
     date = DateTime.fromMillisecondsSinceEpoch(map[ExpenseTable.columnDate]),
-    monthAdded = DateTime.fromMillisecondsSinceEpoch(map[ExpenseTable.columnMonthAdded]),
-    yearAdded = DateTime.fromMillisecondsSinceEpoch(map[ExpenseTable.columnYearAdded]);
+    yearAdded = map[ExpenseTable.columnYearAdded];
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic> {
       ExpenseTable.columnAmount: amount,
       ExpenseTable.columnTitle: title,
       ExpenseTable.columnDate: date.millisecondsSinceEpoch,
-      ExpenseTable.columnMonthAdded: monthAdded.millisecondsSinceEpoch,
-      ExpenseTable.columnYearAdded: yearAdded.millisecondsSinceEpoch,
+      ExpenseTable.columnYearAdded: yearAdded,
+      ExpenseTable.columnId: id,
     };
-    if ( id != null) {
-      map[ExpenseTable.columnId] = id;
-    }
     return map;
   }
 

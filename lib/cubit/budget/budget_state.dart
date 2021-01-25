@@ -33,4 +33,4 @@ class WeeklyBudgets extends BudgetState {}
 
 class MonthlyBudgets extends BudgetState {}
 
-class ThisYearBudget extends BudgetState {}
+class YearlyBudget extends BudgetState {}

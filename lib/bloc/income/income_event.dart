@@ -26,12 +26,12 @@ class DeleteIncome extends IncomeEvent{
 }
 
 class FetchIncomesFor extends IncomeEvent {
-  final DateTime date;
+  final DateTime month;
 
-  const FetchIncomesFor(this.date);
+  const FetchIncomesFor(this.month);
 
   @override
-  List<Object> get props => [date];
+  List<Object> get props => [month];
 }
 
 class ChangeCurrency extends IncomeEvent {

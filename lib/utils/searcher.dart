@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:trackIt/models/income.dart';
-import 'package:trackIt/screens/expenses_screen.dart';
+import 'package:trackIt/screens/income_screen.dart';
 
+import '../models/income.dart';
+import '../screens/expenses_screen.dart';
 import '../screens/search_result_screen.dart';
 import '../repository/db_tables.dart';
 import '../models/expense.dart';
@@ -114,8 +115,11 @@ class Searcher {
                       onSubmitted: (amountAsString) async {
                         final double amount =
                             double.parse(amountAsString, (value) {
-                          Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-                              content: Text("$value is not a valid amount"),));
+                              Navigator.of(context).pop();
+                          Scaffold.of(IncomePage.ctx).showSnackBar(SnackBar(
+                              content: Text("$value is not a valid amount"),
+                              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),));
+                              
                           return 0;
                         });
                         if (amount == 0) {
@@ -188,12 +192,12 @@ class Searcher {
 
   Widget _buildIncomeListView(List<Income> incomes) =>
       (incomes == null || incomes.isEmpty)
-          ? const Center(
+          ? Center(
               child: Text(
                 "No Incomes Found",
                 style: TextStyle(
                     fontSize: 20,
-                    color: Color.fromRGBO(171, 39, 79, 0.4),
+                    color: Colors.deepPurple.withOpacity(0.5),
                     fontWeight: FontWeight.bold),
               ),
             )
@@ -290,8 +294,10 @@ class Searcher {
                       onSubmitted: (amountAsString) async {
                         final double amount =
                             double.parse(amountAsString, (value) {
-                          Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-                              content: Text("$value is not a valid amount")));
+                              Navigator.of(context).pop();
+                          Scaffold.of(ExpensesPageBody.ctx).showSnackBar(SnackBar(
+                              content: Text("$value is not a valid amount"),
+                              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),));
                           return 0;
                         });
                         if (amount == 0) {
@@ -364,12 +370,12 @@ class Searcher {
 
   Widget _buildExpensesListView(List<Expense> expenses) =>
       (expenses == null || expenses.isEmpty)
-          ? const Center(
+          ? Center(
               child: Text(
                 "No Expenses Found",
                 style: TextStyle(
                     fontSize: 20,
-                    color: Color.fromRGBO(171, 39, 79, 0.4),
+                    color: Colors.deepPurple.withOpacity(0.5),
                     fontWeight: FontWeight.bold),
               ),
             )

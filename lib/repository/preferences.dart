@@ -6,12 +6,31 @@ class Preferences{
 
   static final Preferences preferences = Preferences._();
 
-  int _lastReportDate;
+  ///lastDailyReportDate holds the actual Date a daily report was last prepared
+  int _lastDailyReportDate;
+
+  ///lastWeeklyReportDate holds the week number of the last weekly report
+  int _lastWeeklyReportDate;
+
+  ///lastMonthlyReportDate holds year.month a monthly report was last prepared.
+  ///_lastMonthlyReportDate is formatted as year.month
+  double _lastMonthlyReportDate;
+
+  ///lastYearlyReportDate holds the year a yearly report was last prepared
+  ///lastYearlyReportDate is formatted as year.0
+  double _lastYearlyReportDate;
+
+  //These two fields help with the middle nav bar. They specifically contain the date which trackit was first started
   int _oldestIncomeDate;
   int _oldestExpenseDate;
+
+  //currency is the currency symbol chosen by user
   String _currency;
 
-  DateTime get lastReportDate => DateTime.fromMicrosecondsSinceEpoch(_lastReportDate);
+  double get lastYearlyReportDate => _lastYearlyReportDate;
+  double get lastMonthlyReportDate => _lastMonthlyReportDate;
+  int get lastWeeklyReportDate => _lastWeeklyReportDate;
+  DateTime get lastDailyReportDate => DateTime.fromMillisecondsSinceEpoch(_lastDailyReportDate);
   DateTime get oldestIncomeDate => DateTime.fromMillisecondsSinceEpoch(_oldestIncomeDate);
   DateTime get oldestExpenseDate => DateTime.fromMillisecondsSinceEpoch(_oldestExpenseDate);
   String get currency => _currency;
@@ -29,18 +48,60 @@ class Preferences{
     preferences._initCurrency(sharedPrefs);
     preferences._initOldestExpenseDate(sharedPrefs);
     preferences._initOldestIncomeDate(sharedPrefs);
-    preferences._initLastReportDate(sharedPrefs);
+    preferences._initLastReportDates(sharedPrefs);
   }
 
-  void _initLastReportDate (SharedPreferences sharedPrefs) {
-    _lastReportDate = sharedPrefs.getInt(_Keys._lastReportDate);
-    if (_lastReportDate == null) {
-      final DateTime d = DateTime.now();
+  void _initLastReportDates (SharedPreferences sharedPrefs) {
+    _lastDailyReportDate = sharedPrefs.getInt(_Keys._lastDailyReportDate);
+    _lastWeeklyReportDate = sharedPrefs.getInt(_Keys._lastWeeklyReportDate);
+    _lastMonthlyReportDate = sharedPrefs.getDouble(_Keys._lastMonthlyReportDate);
+    _lastYearlyReportDate = sharedPrefs.getDouble(_Keys._lastYearlyReportDate);
 
-      //setting _lastReportDate to today on first initialization enables trackit to generate its first report tomorrow
-      //and the generated report will be todays report
-      _lastReportDate = DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
-      sharedPrefs.setInt(_Keys._lastReportDate, _lastReportDate);
+    if (_lastDailyReportDate == null) {
+      final DateTime d = DateTime.now().subtract(Duration(days: 1));
+
+      //initializing _lastDailyReportDate to yesterday enables trackit to generate its first report tomorrow
+      //and the generated report will be todays report. 
+      //This makes sense because trackit would assume it has generated report for the day before app was opened for the first time 
+      _lastDailyReportDate = DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
+      sharedPrefs.setInt(_Keys._lastDailyReportDate, _lastDailyReportDate);
+    }
+
+    if (_lastWeeklyReportDate == null) {
+
+      //initializing lastWeeklyReportDate to the last week enables trackit to generate its first weekly report next week
+      //and the generated report will be for this week.
+      //This makes sense because trackit would assume it has generated report for the week before app was opened for the first time
+      //and its first weekly report would be the report of the week the app was first opened
+      Weeks weeks = Weeks(inYear: Year(DateTime.now().year));
+      _lastWeeklyReportDate = weeks.getWeekByDate(DateTime.now()).number-1;
+      sharedPrefs.setInt(_Keys._lastWeeklyReportDate, _lastWeeklyReportDate);
+    }
+
+    if (_lastMonthlyReportDate == null) {
+
+      //initializing lastMonthlyReportDate to last month enables trackit generate its first monthly report next month
+      //and the generated report will be for this month.
+      //This makes sense because trackit would assume it has generated report for the month before app was opened for the first time
+      //and its first monthly report would be the report of the month the app was first opened
+      if(DateTime.now().month == 1) {
+        _lastMonthlyReportDate = DateTime.now().year-1 + 0.12;
+      }
+      else {
+        final int month = DateTime.now().month;
+        _lastMonthlyReportDate = DateTime.now().year + double.parse("0.$month");
+      }
+      sharedPrefs.setDouble(_Keys._lastMonthlyReportDate, _lastMonthlyReportDate);
+    }
+
+    if (_lastYearlyReportDate == null) {
+
+      //initializing lastYearlyReportDate to last month enables trackit generate its first yearly report next year
+      //and the generated report will be for this year.
+      //This makes sense because trackit would assume it has generated report for the year before app was opened for the first time
+      //and its first yearly report would be the report of the year the app was first opened
+      _lastYearlyReportDate = DateTime.now().year -1.0;
+      sharedPrefs.setDouble(_Keys._lastYearlyReportDate, _lastYearlyReportDate);
     }
   }
 
@@ -61,24 +122,28 @@ class Preferences{
     }
   }
 
-  //setOldestIncomeDate is invoked when a new added income.date.isBefore(_oldestIncomeDate)
-  void setOldestIncomeDate (DateTime oldestDate) async {
-    _oldestIncomeDate = oldestDate.millisecondsSinceEpoch;
+  void setLastDailyReportDate (DateTime lastDailyReportDate) async {
+    _lastDailyReportDate = lastDailyReportDate.millisecondsSinceEpoch;
     final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
-    sharedPrefs.setInt(_Keys._oldestIncomeDate, _oldestIncomeDate);
+    sharedPrefs.setInt(_Keys._lastDailyReportDate, _lastDailyReportDate);
   }
 
-  void setLastReportDate (DateTime lastReportDate) async {
-    _lastReportDate = lastReportDate.millisecondsSinceEpoch;
+  void setLastWeeklyReportDate (int lastWeeklyReportDate) async {
+    _lastWeeklyReportDate = lastWeeklyReportDate;
     final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
-    sharedPrefs.setInt(_Keys._lastReportDate, _lastReportDate);
+    sharedPrefs.setInt(_Keys._lastWeeklyReportDate, _lastWeeklyReportDate);
   }
 
-  //setOldestExpenseDate is invoked when new expenses are added
-  void setOldestExpenseDate (DateTime oldestDate) async {
-    _oldestExpenseDate = oldestDate.millisecondsSinceEpoch;
+  void setLastMonthlyReportDate (double lastMonthlyReportDate) async {
+    _lastMonthlyReportDate = lastMonthlyReportDate;
     final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
-    sharedPrefs.setInt(_Keys._oldestExpenseDate, _oldestExpenseDate);
+    sharedPrefs.setDouble(_Keys._lastMonthlyReportDate, _lastMonthlyReportDate);
+  }
+
+  void setLastYearlyReportDate (double lastYearlyReportDate) async {
+    _lastYearlyReportDate = lastYearlyReportDate;
+    final SharedPreferences sharedPrefs = await SharedPreferences.getInstance();
+    sharedPrefs.setDouble(_Keys._lastYearlyReportDate, _lastYearlyReportDate);
   }
 
   void _initCurrency(SharedPreferences sharedPrefs) {
@@ -90,7 +155,10 @@ class Preferences{
 }
 
 class _Keys{
-  static const String _lastReportDate = "lastReportDate";
+  static const String _lastYearlyReportDate = "lastYearlyReportDate";
+  static const String _lastMonthlyReportDate = "lastMonthlyReportDate";
+  static const String _lastWeeklyReportDate = "lastWeeklyReportDate";
+  static const String _lastDailyReportDate = "lastReportDate";
   static const String _currencySymbol = "currencySymbol";
   static const String _oldestExpenseDate = "oldestExpenseDate";
   static const String _oldestIncomeDate = "oldestIncomeDate";

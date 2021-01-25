@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../repository/repository.dart';
 import '../widgets/income_bar_chart.dart';
 import '../widgets/income_tiles.dart';
 import '../cubit/middlenavbar_cubit/middlenavbar_cubit.dart';
@@ -11,8 +9,11 @@ class IncomePage extends StatelessWidget {
 
   const IncomePage();
 
+  static BuildContext ctx;
+
   @override
   Widget build(BuildContext context) {
+    ctx = context;
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double statusBarHeight = mediaQuery.padding.top;
     final double appBarHeight = AppBar().preferredSize.height;
@@ -38,13 +39,12 @@ class IncomePage extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(6))),
         child: BlocBuilder<MiddleNavBarCubit, MiddleNavBarState>(
           builder: (_, state) {
-            if (state is MiddleNavBarInitial) {
-              state.middleNavBar.oldestDate = Repository.repository.oldestIncomeDate;
-              return state.middleNavBar;
-            }
+            if (state is MiddleNavBarInitial) return state.middleNavBar;
+
             if (state is NewMiddleNavBar && state.page == MiddleNavBarOn.incomePage) {
               return state.newMiddleNavBar;
             }
+            
             return Text("This is an error you shouldn't see"); //would never be reached, anyways
           },
         ),

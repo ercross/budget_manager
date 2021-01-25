@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:trackIt/models/income.dart';
-import 'package:trackIt/widgets/income_bar_chart.dart';
 
+import '../../models/income.dart';
+import '../../widgets/income_bar_chart.dart';
 import '../../widgets/expense_bar_chart.dart';
 import '../../models/expense.dart';
 import '../../models/chart_data.dart';
@@ -32,20 +32,16 @@ class ChartBloc extends Bloc<ChartEvent, ChartState> {
       switch (event.chartName) {
         case ChartName.expense:
           final ChartDataDateRange dateRange = ExpenseBarChart.dateRange;
-          if (_dateIsContainedInRange(dateRange, event.expense.date)) {
-            final ChartData chartData = await ChartData(dateRange, ChartType.daily).generateChartData();
-            yield NewChartData(ChartName.expense, chartData);
-          }
+          final ChartData chartData = await ChartData(dateRange, ChartType.daily, /*expenseToDelete: event.expenseToDelete*/).generateChartData();
+          yield NewChartData(ChartName.expense, chartData);
           break;
+
         case ChartName.income:
           final ChartDataDateRange d = IncomeBarChart.dateRange;
-          if (d.fromDate.month <= event.income.date.month && event.income.date.month <= d.toDate.month) {
-            final ChartData chartData = await ChartData(d, ChartType.monthly).generateChartData();
-            yield NewChartData(ChartName.income, chartData);
-          }
+          final ChartData chartData = await ChartData(d, ChartType.monthly, /*incomeToDelete: event.incomeToDelete*/).generateChartData();
+          yield NewChartData(ChartName.income, chartData);
+          break;
       }
-      
-      
     }
 
     if (event is BuildNewChart) {
@@ -56,16 +52,5 @@ class ChartBloc extends Bloc<ChartEvent, ChartState> {
       final newChartData = await ChartData(event.chartDataDateRange, ChartType.daily).generateChartData();
       yield NewChartData(ChartName.expense, newChartData);
     }
-  }
-
-  bool _dateIsContainedInRange(ChartDataDateRange range, DateTime date) {
-    DateTime currentDate = range.fromDate;
-    while (!currentDate.isAfter(range.toDate)) {
-      if (date.isAtSameMomentAs(currentDate)) {
-        return true;
-      }
-      currentDate = currentDate.add(Duration(days: 1));
-    }
-    return false;
   }
 }

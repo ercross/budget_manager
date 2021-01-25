@@ -29,7 +29,6 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     }
 
     if (event is AddExpense) {
-      repository.insert(ExpenseTable.tableName, event.expense.toMap());
       List<Expense> expenses; 
       if (!event.expense.date.isAtSameMomentAs(MiddleNavBarCubit.expensePageDateF)) {
         List<Map<String, dynamic>> maps = await Repository.repository.fetch(ExpenseTable.tableName, 
@@ -40,7 +39,6 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     }
 
     if (event is DeleteExpense) {
-      repository.delete(tableName: ExpenseTable.tableName, where: "id=?", targetValues: [event.id]);
       yield RemoveExpense(event.id);
     }
   }

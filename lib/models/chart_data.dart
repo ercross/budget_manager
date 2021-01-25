@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
-import 'package:trackIt/models/income.dart';
 
+import '../models/income.dart';
 import '../models/chart_data_date_range.dart';
 import '../repository/db_tables.dart';
 import '../repository/repository.dart';
@@ -38,7 +38,7 @@ class ChartData extends Equatable {
 
   ///ChartData._loaded was only used to bind and export barTitles, expensesPerDate, and durationUnitTotal into one object
   ///so setChartData can return all within a single object.
-  ChartData._loaded({this.chartType,
+  ChartData._loaded({ this.chartType, 
       this.dateRange, 
       @required this.barTitles,
       @required this.totalAmount,

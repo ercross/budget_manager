@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:trackIt/repository/repository.dart';
-import 'package:trackIt/widgets/middle_nav_bar.dart';
+import '../../widgets/middle_nav_bar.dart';
 
 part 'middlenavbar_state.dart';
 
@@ -22,14 +21,14 @@ class MiddleNavBarCubit extends Cubit<MiddleNavBarState> {
   }
 
   void emitNew (MiddleNavBar newMiddleNavBar, MiddleNavBarOn page) async {
-    if (page == MiddleNavBarOn.expensePage) {
-      expensePageDateF = newMiddleNavBar.currentDate;
-      newMiddleNavBar.oldestDate = Repository.repository.oldestExpenseDate;
-    }
-    if (page == MiddleNavBarOn.incomePage) {
-      incomePageDateF = newMiddleNavBar.currentDate;
-      newMiddleNavBar.oldestDate = Repository.repository.oldestIncomeDate;
-    }
-    emit(NewMiddleNavBar(newMiddleNavBar, page));
+    switch (page) {
+      case MiddleNavBarOn.expensePage:
+        expensePageDateF = newMiddleNavBar.currentDate;
+        emit(NewMiddleNavBar(newMiddleNavBar, MiddleNavBarOn.expensePage));
+        break;
+      case MiddleNavBarOn.incomePage:
+        incomePageDateF = newMiddleNavBar.currentDate;
+        emit(NewMiddleNavBar(newMiddleNavBar, MiddleNavBarOn.incomePage));
+    }    
   }
 }

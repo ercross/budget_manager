@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:trackIt/widgets/budget_tiles.dart';
+
+import '../widgets/budget_tiles.dart';
 
 class BudgetsPage extends StatelessWidget {
 
@@ -7,8 +8,11 @@ class BudgetsPage extends StatelessWidget {
 
   const BudgetsPage();
 
+  static BuildContext ctx;
   @override
   Widget build(BuildContext context) {
+    ctx = context;
+
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double statusBarHeight = mediaQuery.padding.top;
     final double appBarHeight = AppBar().preferredSize.height;

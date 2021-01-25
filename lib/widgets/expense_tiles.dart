@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 import '../cubit/middlenavbar_cubit/middlenavbar_cubit.dart';
-import '../screens/expenses_screen.dart';
 import '../repository/db_tables.dart';
 import '../repository/repository.dart';
 import '../bloc/chart/chart_bloc.dart' as chart;
@@ -30,7 +29,7 @@ class _ExpenseTiles extends State<ExpenseTiles> with WidgetsBindingObserver{
     Repository.repository.fetch(ExpenseTable.tableName, where: "${ExpenseTable.columnDate}=?", whereArgs: [todaysDate.millisecondsSinceEpoch]).then((maps){
         setState(() {
           expenses = Expense.fromMaps(maps);
-          BlocProvider.of<MiddleNavBarCubit>(ExpensesPageBody.expensesScreenContext).emitInitial(MiddleNavBarOn.expensePage);          
+          BlocProvider.of<MiddleNavBarCubit>(context).emitInitial(MiddleNavBarOn.expensePage);          
         });
     });
   }
@@ -82,11 +81,11 @@ class _ExpenseTiles extends State<ExpenseTiles> with WidgetsBindingObserver{
 
                 //TODO: This is a fix for a bug encountered that causes income added to be readded again 
                 //once a swipe is made off the page and back to the page. Find the problem, rather than this hack
-                if (expenses.isNotEmpty) expenses.removeWhere((income) { return
-                  income.amount == state.expense.amount
-                  && income.date == state.expense.date
-                  && income.title == state.expense.title;} );
-                expenses.add(state.expense);
+                // if (expenses.isNotEmpty) expenses.removeWhere((income) { return
+                //   income.amount == state.expense.amount
+                //   && income.date == state.expense.date
+                //   && income.title == state.expense.title;} );
+                if(expenses != null && !expenses.contains(state.expense)) expenses.add(state.expense);
                 return _buildListView(expenses); 
               }
               else {
@@ -94,7 +93,6 @@ class _ExpenseTiles extends State<ExpenseTiles> with WidgetsBindingObserver{
                 final DateTime todaysDateF = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
                 BlocProvider.of<MiddleNavBarCubit>(context).emitNew(
                   MiddleNavBar(
-                    oldestDate: Repository.repository.oldestExpenseDate,
                     currentDate: state.expense.date,
                     enableOldestDateButton: Repository.repository.oldestExpenseDate.isBefore(expenseDate),
                     enablePreviousDayButton: expenseDate.subtract(Duration(days: 1)).isAfter(Repository.repository.oldestExpenseDate),
@@ -130,8 +128,12 @@ class _ExpenseTiles extends State<ExpenseTiles> with WidgetsBindingObserver{
   }
 
   void _deleteExpense(Expense expense) {
-    BlocProvider.of<ExpenseBloc>(context).add(DeleteExpense(expense.id));
-    BlocProvider.of<chart.ChartBloc>(context)
+    if(!expense.date.isAtSameMomentAs(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))) return;
+    else {
+      Repository.repository.delete(tableName: ExpenseTable.tableName, where: "id=?", targetValues: [expense.id]);
+      BlocProvider.of<chart.ChartBloc>(context)
         .add(chart.ModifyChart(chart.ChartName.expense, expense));
+      BlocProvider.of<ExpenseBloc>(context).add(DeleteExpense(expense.id));
+    }
   }
 }

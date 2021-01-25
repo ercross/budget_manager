@@ -22,12 +22,11 @@ class IncomeBloc extends Bloc<IncomeEvent, IncomeState> {
 
     if (event is FetchIncomesFor) {
       final List<Map<String, dynamic>> maps = await Repository.repository
-        .fetch(IncomeTable.tableName, where: "${IncomeTable.columnMonth}=?", whereArgs: [event.date.millisecondsSinceEpoch]);
+        .fetch(IncomeTable.tableName, where: "${IncomeTable.columnMonth}=?", whereArgs: [event.month.millisecondsSinceEpoch]);
       yield CurrentDateIncomes(Income.fromMaps(maps));
     }
 
     if (event is AddIncome) {
-      Repository.repository.insert(IncomeTable.tableName, event.income.toMap());
       List<Income> incomes;
       if (!event.income.date.isAtSameMomentAs(MiddleNavBarCubit.incomePageDateF)) {
          final List<Map<String, dynamic>> maps = await Repository.repository.fetch(IncomeTable.tableName, 
@@ -38,7 +37,6 @@ class IncomeBloc extends Bloc<IncomeEvent, IncomeState> {
     }
 
     if (event is DeleteIncome) {
-      Repository.repository.delete(tableName: IncomeTable.tableName, where: "${IncomeTable.columnId}=?", targetValues: [event.id]);
       yield RemoveIncome(event.id);
     }
   }

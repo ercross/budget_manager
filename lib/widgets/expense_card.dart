@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:trackIt/repository/repository.dart';
 
+import '../repository/repository.dart';
 import '../models/expense.dart';
 
 class ExpenseCard extends StatelessWidget {
@@ -43,7 +43,7 @@ class ExpenseCard extends StatelessWidget {
 
     final Text date = Text(DateFormat('EEE MMM d, yyyy').format(expense.date),
         style: TextStyle(
-            fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black87));
+            fontWeight: FontWeight.w500, fontSize: 14, color: Colors.grey));
 
     return Card(
       elevation: 10,

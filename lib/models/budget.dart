@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:trackIt/repository/db_tables.dart';
+
+import '../repository/db_tables.dart';
 
 enum BudgetType {
   daily, 
@@ -15,30 +16,32 @@ class Budget extends Equatable {
   final double amount;
   final BudgetType type;
 
-  ///date is the date this budget was added. It is the date displayed on BudgetCard
-  final DateTime date;
-
-  ///typeDate is a concatenated form of the dateRange. It is formatted based on BudgetType
-  ///for BudgetType.yearly, a possible value = 2021.0, where 2021 = year and 0 indicates this budget has no month attached to it
+  ///typeDate holds only the year and month this budget date range covers, 
+  ///formatted like so, (dateRange.year).(dateRang.month).
+  ///for BudgetType.yearly, a possible value = 2021.0, 
+  ///where 2021 = year and 0 indicates this budget has no month attached to it.
   ///for BudgetType.monthly, a possible value = 2021.3, where 3 is the month number, e.g DateTime.march
-  ///for BudgetType.weekly, a possible value = 2021.31 where 1 is the week number
-  ///This way, each budget entry will be unique
-  ///Regardless that the month is greater than 10, this method will still be effective since the field is only used to query
+  ///for BudgetType.weekly and BudgetType.daily, check this.dateNumber,
   final double typeDate;
 
+  ///weekNumber denotes the weekNumber this budget covers
+  ///If weekNumber is 0, then budget is either BudgetType.yearly or BudgetType.monthly
+  ///If BudgetType is BudgetType.daily, then weekNumber contains date.milliSecondsSinceEpoch
+  final int dateNumber;
+
+
   Budget({
-    this.id, 
+    @required this.dateNumber,
     @required this.amount, 
-    @required this.type, 
-    @required this.date, 
-    @required this.typeDate});
+    @required this.type,  
+    @required this.typeDate}) : id = DateTime.now().millisecondsSinceEpoch;
 
   @override
-  List<Object> get props => [id, amount, type, date, typeDate];
+  List<Object> get props => [id, amount, type, dateNumber, typeDate];
 
   Budget.fromMap(Map<String, dynamic> map) :
     id = map[BudgetTable.columnId],
-    date = DateTime.fromMillisecondsSinceEpoch(map[BudgetTable.columnDate]),
+    dateNumber = (map[BudgetTable.columnDateNumber]),
     typeDate = map[BudgetTable.columnTypeDate],
     amount = map[BudgetTable.columnAmount],
     type = BudgetType.values[map[BudgetTable.columnType]];
@@ -46,13 +49,11 @@ class Budget extends Equatable {
   Map<String, dynamic> toMap() {
     var map = <String, dynamic> {
       BudgetTable.columnAmount: amount,
-      BudgetTable.columnDate: date.millisecondsSinceEpoch,
+      BudgetTable.columnDateNumber: dateNumber,
       BudgetTable.columnTypeDate: typeDate,
       BudgetTable.columnType: type.index,
+      BudgetTable.columnId: id,
     };
-    if ( id != null) {
-      map[BudgetTable.columnId] = id;
-    }
     return map;
   }
 
@@ -71,7 +72,7 @@ class Budget extends Equatable {
 
   @override
   String toString() {
-    return "id: $id \n date: $date \n typeDate: $typeDate \n amount: $amount \n type: ${type.toString()}";
+    return "id: $id \n date number: $dateNumber \n typeDate: $typeDate \n amount: $amount \n type: ${type.toString()}";
   }
 
 }

@@ -22,6 +22,7 @@ class _BudgetTilesState extends State<BudgetTiles> {
   List<Budget> weeklyBudgets = List<Budget>();
   List<Budget> monthlyBudgets = List<Budget>();
   Budget thisYearBudget;
+  Budget nextYearBudget;
 
   void initState() { 
     super.initState();
@@ -44,6 +45,9 @@ class _BudgetTilesState extends State<BudgetTiles> {
               break;
           }
         });
+        dailyBudgets.sort((current, next) => current.dateNumber.compareTo(next.dateNumber));
+        weeklyBudgets.sort((current, next) => current.dateNumber.compareTo(next.dateNumber));
+        monthlyBudgets.sort((current, next) => current.typeDate.compareTo(next.typeDate));
       });
     });
   }
@@ -51,6 +55,7 @@ class _BudgetTilesState extends State<BudgetTiles> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BudgetCubit, BudgetState>(
+      
       builder: (context, state) {
 
         if (state is WeeklyBudgets) 
@@ -69,26 +74,22 @@ class _BudgetTilesState extends State<BudgetTiles> {
             ],
           );
 
-        if (state is ThisYearBudget)
-          if (thisYearBudget == null) {
-            return Column(
-              children: [
-                _buildPageTitle(context, BudgetType.yearly),
-                _buildBudgetTiles(context, null)
-              ],
-            );  
-          }
-          else return Column(
+        if (state is YearlyBudget){
+          List<Budget> yearlyBudget = List<Budget>();
+          if(thisYearBudget != null) yearlyBudget.add(thisYearBudget);
+          if(nextYearBudget != null) yearlyBudget.add(nextYearBudget);
+          return Column(
             children: [
               _buildPageTitle(context, BudgetType.yearly),
-              _buildBudgetTiles(context, [thisYearBudget])
+              _buildBudgetTiles(context, yearlyBudget)
             ],
           );
+        }
 
         if (state is BudgetAdded) 
           return _addNewBudget(context, state);
         
-        return Column(
+        else return Column(
             children: [
               _buildPageTitle(context, BudgetType.daily),
               _buildBudgetTiles(context, dailyBudgets)
@@ -100,44 +101,55 @@ class _BudgetTilesState extends State<BudgetTiles> {
 
   Widget _addNewBudget(BuildContext ctx, BudgetAdded state) {
     switch (state.budget.type) {
+
             case BudgetType.daily:
               dailyBudgets.add(state.budget);
               return Column(
-                children: [
-                  _buildPageTitle(ctx, BudgetType.daily),
-                  _buildBudgetTiles(ctx, dailyBudgets)
-                ],
-              );
+                  children: [
+                    _buildPageTitle(ctx, BudgetType.daily),
+                    _buildBudgetTiles(ctx, dailyBudgets)
+                  ],
+                );
               break;
 
             case BudgetType.weekly:
               weeklyBudgets.add(state.budget);
               return Column(
-                children: [
-                  _buildPageTitle(ctx, BudgetType.weekly),
-                  _buildBudgetTiles(ctx, weeklyBudgets)
-                ],
+                  children: [
+                    _buildPageTitle(ctx, BudgetType.weekly),
+                    _buildBudgetTiles(ctx, weeklyBudgets)
+                  ],
               );
               break;
 
             case BudgetType.monthly:
               monthlyBudgets.add(state.budget);
               return Column(
-                children: [
-                  _buildPageTitle(ctx, BudgetType.monthly),
-                  _buildBudgetTiles(ctx, monthlyBudgets)
-                ],
-              );
+                  children: [
+                    _buildPageTitle(ctx, BudgetType.monthly),
+                    _buildBudgetTiles(ctx, monthlyBudgets)
+                  ],
+                );
               break;
 
             case BudgetType.yearly:
-              thisYearBudget= state.budget;
-              return Column(
+              if(state.budget.typeDate == DateTime.now().year.toDouble()){
+                thisYearBudget = state.budget;
+                return Column(
                 children: [
                   _buildPageTitle(ctx, BudgetType.yearly),
                   _buildBudgetTiles(ctx, [thisYearBudget])
                 ],
               );
+              } else {
+                nextYearBudget = state.budget;
+                return Column(
+                children: [
+                  _buildPageTitle(ctx, BudgetType.yearly),
+                  _buildBudgetTiles(ctx, [nextYearBudget])
+                ],
+              );
+              }
               break;
 
             default: 
@@ -153,6 +165,9 @@ class _BudgetTilesState extends State<BudgetTiles> {
     fontWeight: FontWeight.bold)),),
       );
     }
+    
+    Set<Budget> temp = budgets.toSet();
+    budgets = temp.toList();
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -210,9 +225,11 @@ class _BudgetTilesState extends State<BudgetTiles> {
         setState(() {monthlyBudgets.remove(budget);});
         break;
       case BudgetType.yearly:
-        setState(() {thisYearBudget = null;});
+        setState(() {
+          if (budget == thisYearBudget) thisYearBudget = null;
+          else nextYearBudget = null;});
         break;
     }
-    BlocProvider.of<BudgetCubit>(ctx).deleteBudget(budget.id);
+    Repository.repository.delete(tableName: BudgetTable.tableName, where: "${BudgetTable.columnId}=?", targetValues: [budget.id]);
   }
 }

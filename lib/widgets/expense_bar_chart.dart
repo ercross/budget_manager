@@ -57,7 +57,12 @@ class _ChartState extends State<ExpenseBarChart> with WidgetsBindingObserver {
           fromDate: todaysDateF.subtract(Duration(days: 6)),
       );
       ExpenseBarChart.dateRange = _dateRange;
-    }
+      ChartData(_dateRange, ChartType.monthly).generateChartData().then((chartData) {
+      setState (() {
+        _chartData = chartData;
+        _buildChartBody();
+      });
+    });}
   }
 
   final DateFormat d = DateFormat('EEE MMM d, yyyy');
@@ -101,9 +106,8 @@ class _ChartState extends State<ExpenseBarChart> with WidgetsBindingObserver {
                           chartTitle, textAlign: TextAlign.right,
                           style: TextStyle(
                             fontSize: 17,
-                            fontFamily: 'Roboto',
+                            fontFamily: 'OleoScript',
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
                           ),
                         ))),
                 Expanded(
@@ -144,7 +148,7 @@ class _ChartState extends State<ExpenseBarChart> with WidgetsBindingObserver {
         child: const Text("total",
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontFamily: "OleoScript",
             )),
       ),
       Expanded(
@@ -222,8 +226,8 @@ class _ChartState extends State<ExpenseBarChart> with WidgetsBindingObserver {
             showTitles: true,
             getTextStyles: (_) => TextStyle(
               color: Colors.white, 
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic),
+              fontFamily: "OleoScript",
+              ),
             margin: 20,
             getTitles: (double value) {
               switch (value.toInt()) {

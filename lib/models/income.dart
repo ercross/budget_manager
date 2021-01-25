@@ -9,39 +9,41 @@ class Income extends Equatable {
   final double amount;
   final DateTime date;
 
-  //these fields were added to ease generation of monthly and yearly reports
-  final DateTime month; 
-  final DateTime year;
+  ///year represents the year this income was added.  
+  final int year;
+
+  ///month represents the month this income was added
+  ///Due to the signature of DateTime(), month is formatted as DateTime(thisYear, thisMonth, 1)
+  final DateTime month;
 
   Income({
-    this.id, 
     @required this.source, 
     @required this.amount, 
-    @required this.date}) : month = DateTime(date.year, date.month), 
-                            year = DateTime(date.year);
+    @required this.date}) 
+      : month = DateTime(date.year, date.month), 
+        id = DateTime.now().millisecondsSinceEpoch,
+        year = date.year;
 
   @override
-  List<Object> get props => [id, source, amount, date, month, year];
+  List<Object> get props => [id, source, amount, date, year];
 
   Income.fromMap(Map<String, dynamic> map) :
     id = map[IncomeTable.columnId],
     source = map[IncomeTable.columnSource],
     amount = map[IncomeTable.columnAmount],
     date = DateTime.fromMillisecondsSinceEpoch(map[IncomeTable.columnDate]),
-    month = DateTime.fromMicrosecondsSinceEpoch(map[IncomeTable.columnMonth]),
-    year = DateTime.fromMillisecondsSinceEpoch(map[IncomeTable.columnYear]);
+    year = map[IncomeTable.columnYear],
+    month = DateTime.fromMillisecondsSinceEpoch(map[IncomeTable.columnMonth]);
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic> {
       IncomeTable.columnAmount: amount,
       IncomeTable.columnSource: source,
       IncomeTable.columnDate: date.millisecondsSinceEpoch,
+      IncomeTable.columnYear: year,
       IncomeTable.columnMonth: month.millisecondsSinceEpoch,
-      IncomeTable.columnYear: year.millisecondsSinceEpoch
+      IncomeTable.columnId: id,
     };
-    if ( id != null) {
-      map[IncomeTable.columnId] = id;
-    }
     return map;
   }
 
@@ -60,5 +62,4 @@ class Income extends Equatable {
   @override
   String toString() {
     return "id: $id \n source: $source \n amount: $amount \n date: ${date.toString()}";
-  }
-}
+  }}

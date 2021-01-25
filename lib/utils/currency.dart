@@ -1,6 +1,27 @@
 import 'package:flutter/material.dart';
 
 class Currency {
+
+  
+  static String format(double value) {
+    String fValue = "";
+    final String textValue = value.toStringAsFixed(0);
+    final int length = value.toStringAsFixed(0).length;
+    if(value > 9999) {
+      
+      for(int i = length-4; i !=-1 ; i-3) {
+        if (i<3) fValue = textValue.substring(0, i) + fValue;
+        else {
+          String temp = ",${textValue.substring(length-3, length)}";
+          print(temp);
+          fValue = temp + fValue;
+        }
+      }
+    }
+    else return value.toStringAsFixed(0);
+    return fValue;
+  }
+
   static List<DropdownMenuItem<String>> currencies =[
       DropdownMenuItem(child: Text(String.fromCharCodes([0x0024])), value: String.fromCharCodes([0x0024]),),
       DropdownMenuItem(child: Text(String.fromCharCodes([0x00A2])), value: String.fromCharCodes([0x00A2]),),

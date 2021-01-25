@@ -18,8 +18,9 @@ class NewChartData extends ChartState {
   const NewChartData(this.chartName, this.chartData);
 
   @override
-  List<Object> get props => [chartData];
+  List<Object> get props => [chartData, chartName];
 }
 
 class CurrencyChanged extends ChartState {
+  const CurrencyChanged();
 }

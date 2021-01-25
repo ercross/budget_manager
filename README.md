@@ -1,6 +1,6 @@
-# trackIt
+# trackit
 
-track your expenses, manage your budget
+Looking for a way to manage your expenses, just Trackit. Trackit is a fully-featured expense tracker that keeps track of your budget, income, expenses and compiles reports based on your spendings. Just Trackit
 
 ## Getting Started
 

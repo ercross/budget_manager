@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:trackIt/bloc/income/income_bloc.dart';
-import 'package:trackIt/cubit/budget/budget_cubit.dart';
-import 'package:trackIt/repository/repository.dart';
-import 'package:trackIt/widgets/new_budget_form.dart';
-import '../widgets/searcher.dart';
 
+import '../bloc/income/income_bloc.dart';
+import '../cubit/budget/budget_cubit.dart';
+import '../widgets/new_budget_form.dart';
+import '../utils/searcher.dart';
 import '../cubit/middlenavbar_cubit/middlenavbar_cubit.dart';
 import '../screens/report_screen.dart';
 import '../providers/current_page_index.dart';
@@ -33,6 +32,7 @@ class ExpensesPage extends StatelessWidget {
     return Scaffold(
       key: ScaffGlobalKey.key.scaffold,
       appBar: AppBar(
+        
         shadowColor: Theme.of(context).primaryColor,
         
         backgroundColor: Theme.of(context).primaryColor,
@@ -120,11 +120,11 @@ class ExpensesPage extends StatelessWidget {
 class ExpensesPageBody extends StatelessWidget {
   ExpensesPageBody();
 
-  static BuildContext expensesScreenContext;
+  static BuildContext ctx;
 
   @override
   Widget build(BuildContext context) {
-    expensesScreenContext = context;
+    ctx = context;
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double statusBarHeight = mediaQuery.padding.top;
     final double appBarHeight = AppBar().preferredSize.height;
@@ -144,10 +144,8 @@ class ExpensesPageBody extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(6))),
           child: BlocBuilder<MiddleNavBarCubit, MiddleNavBarState>(
             builder: (_, state) {
-              if (state is MiddleNavBarInitial) {
-                state.middleNavBar.oldestDate = Repository.repository.oldestExpenseDate;
-                return state.middleNavBar;
-              }
+              if (state is MiddleNavBarInitial) return state.middleNavBar;
+              
               if (state is NewMiddleNavBar && state.page == MiddleNavBarOn.expensePage) {
                 return state.newMiddleNavBar;
               }

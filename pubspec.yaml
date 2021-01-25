@@ -43,6 +43,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.8.1
+  flutter_native_splash: ^0.2.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -82,6 +84,21 @@ flutter:
       fonts:
         - asset: assets/fonts/Quicksand-Regular.ttf
         - asset: assets/fonts/Quicksand-Bold.ttf
+          weight: 700
+
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/Pacifico-Regular.ttf
+          weight: 700
+
+    - family: FugazOne
+      fonts:
+        - asset: assets/fonts/FugazOne-Regular.ttf
+          weight: 700
+
+    - family: OleoScript
+      fonts: 
+        - asset: assets/fonts/OleoScript-Regular.ttf
           weight: 700
   #
   # For details regarding fonts from package dependencies,

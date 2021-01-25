@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:trackIt/cubit/budget/budget_cubit.dart';
-import 'package:trackIt/cubit/report/report_cubit.dart';
-import 'package:trackIt/models/income.dart';
-import 'package:trackIt/widgets/income_card.dart';
 
+import 'package:rflutter_alert/rflutter_alert.dart';
+import '../cubit/budget/budget_cubit.dart';
+import '../cubit/report/report_cubit.dart';
+import '../models/income.dart';
+import '../widgets/income_card.dart';
 import '../bloc/income/income_bloc.dart' as income;
 import '../providers/current_page_index.dart';
 import '../repository/db_tables.dart';
-import '../screens/expenses_screen.dart';
 import '../screens/search_result_screen.dart';
-import '../models/chart_data_date_range.dart';
 import '../models/expense.dart';
 import '../utils/searcher.dart';
 import '../repository/repository.dart';
@@ -108,11 +104,7 @@ class TrackItDrawer extends StatelessWidget {
 
     _buildDrawerItem("all expenses",
                   Icon(Icons.all_inbox, color: Theme.of(context).accentColor), 
-                  () {_fetchAllExpenses(ScaffGlobalKey.key.scaffold.currentContext);}),
-
-    _buildDrawerItem("chart date",
-                  Icon(Icons.bar_chart, color: Theme.of(context).accentColor), 
-                  () {_chooseDateRange(ScaffGlobalKey.key.scaffold.currentContext);}),
+                  () {_fetchAllExpenses(ScaffGlobalKey.key.scaffold.currentContext);})
     ];
   }
 
@@ -148,7 +140,7 @@ class TrackItDrawer extends StatelessWidget {
                     Navigator.of(context).pop();
                     BlocProvider.of<BudgetCubit>(context).getMonthlyBudgets();}),
 
-      _buildDrawerItem("${DateTime.now().year} budget", 
+      _buildDrawerItem("yearly budget", 
                   Icon(Icons.merge_type, color: Theme.of(context).accentColor), 
                   () {
                     Navigator.of(context).pop();
@@ -193,7 +185,7 @@ class TrackItDrawer extends StatelessWidget {
       leading: icon,
       title: Text(
         itemName,
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        style: TextStyle(fontSize: 15, fontFamily: "OleoScript"),
       ),
     );
   }
@@ -287,7 +279,7 @@ class TrackItDrawer extends StatelessWidget {
         ),
         hint: Text("currency"),
         elevation: 16,
-        style: TextStyle(color: Theme.of(ctx).primaryColor),
+        style: TextStyle(color: Theme.of(ctx).primaryColor, fontSize: 17),
         icon: Icon(Icons.arrow_drop_down, color: Theme.of(ctx).primaryColor),
         onChanged: (newCurrency) {
           Repository.repository.setNewCurrency(newCurrency);
@@ -320,111 +312,5 @@ class TrackItDrawer extends StatelessWidget {
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold))),
     ).show();
-  }
-
-  void _chooseDateRange(BuildContext ctx) {
-    DateTime startDate;
-    DateTime endDate;
-    final TextEditingController _startDateContr = TextEditingController();
-    final TextEditingController _endDateContr = TextEditingController();
-
-    Navigator.of(ctx).pop();
-    Alert(
-        context: ctx,
-        title: "statistics date range",
-        closeIcon: Icon(
-          Icons.close,
-          color: Theme.of(ctx).accentColor,
-          size: 13,
-        ),
-        buttons: [
-          DialogButton(
-            child: Text("OK",
-                style: TextStyle(
-                    fontSize: 20,
-                    color: Theme.of(ctx).primaryColor,
-                    fontWeight: FontWeight.bold)),
-            onPressed: () {
-              _onDateRangeOkButtonPressed(
-                  ctx: ctx, endDate: endDate, startDate: startDate);
-            },
-          )
-        ],
-        content: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildDateCollector(
-                  ctx: ctx,
-                  buttonText: "start date:",
-                  datePosition: startDate,
-                  controller: _startDateContr),
-              _buildDateCollector(
-                  ctx: ctx,
-                  buttonText: "end date:",
-                  datePosition: endDate,
-                  controller: _endDateContr),
-            ])).show();
-  }
-
-  void _onDateRangeOkButtonPressed(
-      {@required DateTime startDate,
-      @required DateTime endDate,
-      @required BuildContext ctx}) async {
-    if (startDate.isAfter(endDate)) {
-      Navigator.of(ctx).pop();
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("start date must be earlier than end date"),
-        duration: Duration(seconds: 2),
-      ));
-      return;
-    }
-
-    if (startDate.difference(endDate) > Duration(days: 6) ||
-        startDate.difference(endDate) < Duration(days: 6)) {
-      Navigator.of(ctx).pop();
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("Date range must be 7 days apart"),
-        duration: Duration(seconds: 2),
-      ));
-      return;
-    }
-
-    final ChartDataDateRange dateRange = ChartDataDateRange(fromDate: startDate, toDate: endDate);
-    BlocProvider.of<ChartBloc>(ctx).add(GenerateNewData(ChartName.expense, dateRange));
-  }
-
-  //@param datePosition can either be startDate or endDate
-  Widget _buildDateCollector(
-      {@required BuildContext ctx,
-      @required String buttonText,
-      @required DateTime datePosition,
-      @required TextEditingController controller}) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Align(
-        alignment: Alignment.bottomLeft,
-        child: FlatButton(
-            child: Text(buttonText,
-                style: TextStyle(
-                    color: Colors.black87, fontWeight: FontWeight.w600)),
-            onPressed: () {
-              DatePicker.showDatePicker(ctx,
-                  showTitleActions: true,
-                  currentTime: DateTime.now(),
-                  maxTime: DateTime.now(), 
-                  onConfirm: (selectedDateF) {
-                    selectedDateF = DateTime(selectedDateF.year, selectedDateF.month, selectedDateF.day);
-                    datePosition = selectedDateF;
-                    controller.text = DateFormat("dd/MM/yyyy").format(datePosition);
-              });
-            }),
-      ),
-      SizedBox(
-          width: 100,
-          height: 70,
-          child: TextField(
-              controller: controller,
-              readOnly: true,
-              style: TextStyle(fontSize: 13, color: Colors.grey)))
-    ]);
   }
 }

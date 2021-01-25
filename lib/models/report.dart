@@ -26,35 +26,37 @@ class Report extends Equatable{
   final double expense; //expense.amount associated with this report
   final ReportType type;
 
-  ///date is the date for which this report was prepared. 
-  ///For reports that spans across a date range, date = start date
-  final DateTime date;
-
-  ///typeDate is a concatenated form of the dateRange. It is formatted based on ReportType
+  ///typeDate holds only the year and month this report covers, 
+  ///formatted like so, (dateRange.year).(dateRang.month).
   ///for reportType.yearly, a possible value = 2021.0, where 2021 = year and 0 indicates this report has no month attached to it
   ///for reportType.monthly, a possible value = 2021.3, where 3 is the month number, e.g DateTime.march
-  ///for reportType.weekly, a possible value = 2021.31 where 1 is the week number
-  ///This way, each report entry will be unique
-  ///Regardless that the month is greater than 10, this method will still be effective since the field is only used to query
+  ///for reportType.weekly, typeDate holds the year.monthWeek
+  ///for reportType.daily, typeDate == 0;
   final double typeDate;
 
-  const Report({
-    this.id,
+  ///if ReportType is ReportType.weekly, then dateNumber denotes the weekNumber this report covers.
+  ///To get the year in which the week belongs, check typeDate which will contain year.monthWeek
+  ///If dateNumber is 0, then budget is either ReportType.yearly or ReportType.monthly
+  ///If ReportType is ReportType.daily, then dateNumber contains DateTime(year, month, day).milliSecondsSinceEpoch
+  ///the date whose equivalent in milliSEcondsSinceEpoch is to obtained must be formatted as DateTime(year, month, day)
+  final int dateNumber;
+
+  Report({
     @required this.budget, 
     @required this.income, 
     @required this.habit,
     @required this.expense, 
     @required this.type, 
-    @required this.date, 
+    @required this.dateNumber, 
     @required this.typeDate, 
-  }) : netTotal = income - budget;
+  }) : id = DateTime.now().millisecondsSinceEpoch, netTotal = income - budget;
 
   @override
-  List<Object> get props => [id, budget, income, expense, type, date, typeDate, habit];
+  List<Object> get props => [id, budget, income, expense, type, dateNumber, typeDate, habit];
 
   Report.fromMap(Map<String, dynamic> map) :
     id = map[ReportTable.columnId],
-    date = DateTime.fromMillisecondsSinceEpoch(map[ReportTable.columnDate]),
+    dateNumber = map[ReportTable.columnDateNumber],
     typeDate = map[ReportTable.columnTypeDate],
     budget = map[ReportTable.columnBudget],
     income = map[ReportTable.columnIncome],
@@ -65,7 +67,7 @@ class Report extends Equatable{
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic> {
-      ReportTable.columnDate: date.millisecondsSinceEpoch,
+      ReportTable.columnDateNumber: dateNumber,
       ReportTable.columnTypeDate: typeDate,
       ReportTable.columnType: type.index, 
       ReportTable.columnBudget: budget,
@@ -73,10 +75,8 @@ class Report extends Equatable{
       ReportTable.columnExpense: expense,
       ReportTable.columnIncome: income,
       ReportTable.columnSpendingHabit: habit.index,
+      ReportTable.columnId: id,
     };
-    if ( id != null) {
-      map[BudgetTable.columnId] = id;
-    }
     return map;
   }
 
@@ -95,8 +95,8 @@ class Report extends Equatable{
   @override
   String toString() {
     return "report with type: ${type.toString()}" +
-    "\n id: $id \n date: $date \n typeDate: $typeDate" +
-    "\n Report: $budget \n expense: $expense \n income: $income" + 
-    "\n spending habit: ${habit.toString()} \n net total: $netTotal";
+    "\nid: $id \ndate number: $dateNumber \ntypeDate: $typeDate" +
+    "\nbudget: $budget \nexpense: $expense \nincome: $income" + 
+    "\nspending habit: ${habit.toString()} \nnet total: $netTotal";
   }
 }

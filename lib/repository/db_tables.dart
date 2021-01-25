@@ -8,13 +8,11 @@ class ExpenseTable {
   static const String columnDate = "date";
   static const String columnAmount = "amount";
   static const String columnTitle = "title";
-  static const String columnMonthAdded = "monthAdded";
   static const String columnYearAdded = "yearAdded";
 
   static FutureOr<void> create (Database database, int version) async {
     await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, ' + 
-      '$columnTitle TEXT, $columnAmount REAL, $columnDate INTEGER, ' + 
-      '$columnMonthAdded INTEGER, $columnYearAdded INTEGER)');
+      '$columnTitle TEXT, $columnAmount REAL, $columnDate INTEGER, $columnYearAdded INTEGER)');
   }
 }
 
@@ -22,36 +20,34 @@ class IncomeTable {
   static const String tableName = "incomeTable";
   static const String columnId = "id";
   static const String columnDate = "date";
+  static const String columnMonth = "month";
   static const String columnAmount = "amount";
   static const String columnSource = "source";
-  static const String columnMonth = "month";
   static const String columnYear = "year";
 
   static FutureOr<void> create (Database database, int version) async {
-    await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, ' + 
-      '$columnSource TEXT, $columnAmount REAL, $columnDate INTEGER, $columnMonth INTEGER ' +
-       '$columnMonth INTEGER, $columnYear INTEGER)');
+    await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, $columnMonth INTEGER, $columnSource TEXT, $columnAmount REAL, $columnDate INTEGER, $columnYear INTEGER)');
   }
 }
 
 class BudgetTable {
   static const String tableName = "budgetTable";
   static const String columnId = "id";
-  static const String columnDate = "date";
+  static const String columnDateNumber = "dateNumber";
   static const String columnTypeDate = "typeDate";
   static const String columnAmount = "amount";
   static const String columnType = "type";
 
   static FutureOr<void> create (Database database, int version) async {
     await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, ' + 
-      '$columnDate INTEGER, $columnTypeDate REAL, $columnAmount REAL, $columnType INTEGER)');
+      '$columnDateNumber INTEGER, $columnTypeDate REAL, $columnAmount REAL, $columnType INTEGER)');
   }
 }
 
 class ReportTable {
   static const String tableName = "reportTable";
   static const String columnId = "id";
-  static const String columnDate = "date";
+  static const String columnDateNumber = "dateNumber";
   static const String columnTypeDate = "typeDate";
   static const String columnBudget = "budget";
   static const String columnSpendingHabit = "spendingHabit";
@@ -62,7 +58,7 @@ class ReportTable {
 
   static FutureOr<void> create (Database database, int version) async {
     await database.execute ('CREATE TABLE $tableName ($columnId INTEGER PRIMARY KEY, ' + 
-      '$columnDate INTEGER, $columnTypeDate REAL, $columnBudget REAL, ' + 
+      '$columnDateNumber INTEGER, $columnTypeDate REAL, $columnBudget REAL, ' + 
       '$columnSpendingHabit INTEGER, $columnExpense REAL, $columnType INTEGER, $columnIncome REAL, $columnNetTotal REAL)');
   }
   }

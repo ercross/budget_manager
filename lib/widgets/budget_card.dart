@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:trackIt/repository/repository.dart';
 
+import '../repository/repository.dart';
+import '../models/week.dart';
 import '../models/budget.dart';
 
 class BudgetCard extends StatelessWidget {
@@ -9,6 +10,38 @@ class BudgetCard extends StatelessWidget {
   final Function (Budget budget) delete ;
 
   BudgetCard({@required this.budget, @required this.delete});
+
+  String weekNumber = "";
+
+  Widget _writeSubtitle () {
+    String subtitle;
+    final DateFormat f = DateFormat('EEE MMM d, yyyy');
+    switch (budget.type) {
+
+      case BudgetType.weekly:
+        Weeks weeks = Weeks(inYear: Year(DateTime.now().year));
+        Week week = weeks.getWeekByNumber(budget.dateNumber);
+        weekNumber = "week ${budget.dateNumber}";
+        subtitle = "starts: ${f.format(week.starts)}\nends:   ${f.format(week.ends)}";
+        break;
+
+      case BudgetType.daily: 
+        subtitle = "${f.format(DateTime.fromMillisecondsSinceEpoch(budget.dateNumber))}";
+        break;
+
+      case BudgetType.monthly:
+        final String year = budget.typeDate.toString().split(".")[0];
+        final int monthNum = int.parse(budget.typeDate.toString().split(".")[1]);
+        final String month = DateFormat('MMMM').format(DateTime(2000, monthNum));
+        subtitle = "$month $year";
+        break;
+
+      case BudgetType.yearly:
+        subtitle = budget.typeDate.toString().split(".")[0];
+        break;
+    }
+    return Text(subtitle, style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,20 +68,9 @@ class BudgetCard extends StatelessWidget {
       ),
     );
 
-    final List<String> typeText = ["Day", "Week", "Month"];
-    final Text title = Text(
-      typeText[budget.type.index],
-      style: TextStyle(
-          fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black),
+    final Text title = Text("budget for: $weekNumber" , style: TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
     );
-
-    final String startDate = DateFormat('EEE MMM d, yyyy').format(budget.startDate);
-    final String endDate = DateFormat('EEE MMM d, yyyy').format(budget.endDate);
-    final String dateText = budget.startDate.isAtSameMomentAs(budget.endDate) ? startDate : "$startDate - $endDate";
-
-    final Text date = Text(dateText,
-        style: TextStyle(
-            fontWeight: FontWeight.w500, fontSize: 15, color: Colors.black87));
 
     return Card(
       elevation: 10,
@@ -57,13 +79,14 @@ class BudgetCard extends StatelessWidget {
           color: Theme.of(context).primaryColor,
           style: BorderStyle.solid),
       shadowColor: Theme.of(context).primaryColor,
-      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 5),
+      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
         enabled: true,
         leading: amount,
         title: title,
-        subtitle: date,
+        isThreeLine: budget.type == BudgetType.weekly,
+        subtitle: _writeSubtitle(),
         trailing: IconButton(
             icon: Icon(Icons.delete),
             color: Colors.deepOrange,

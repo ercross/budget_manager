@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../bloc/income/income_bloc.dart';
 import '../cubit/middlenavbar_cubit/middlenavbar_cubit.dart';
-import '../screens/expenses_screen.dart';
 import '../widgets/income_card.dart';
 import '../models/income.dart';
 import '../repository/db_tables.dart';
@@ -26,9 +25,9 @@ class _IncomeTiles extends State<IncomeTiles> with WidgetsBindingObserver{
   void initState() { 
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    final DateTime monthsDate = DateTime(DateTime.now().year, DateTime.now().month);
+    final DateTime thisMonth = DateTime(DateTime.now().year, DateTime.now().month);
     Repository.repository.fetch(IncomeTable.tableName, 
-      where: "${IncomeTable.columnMonth}=?", whereArgs: [monthsDate.millisecondsSinceEpoch]).then((maps){
+      where: "${IncomeTable.columnMonth}=?", whereArgs: [thisMonth.millisecondsSinceEpoch]).then((maps){
         setState(() {
           incomes = Income.fromMaps(maps);
         });
@@ -48,7 +47,7 @@ class _IncomeTiles extends State<IncomeTiles> with WidgetsBindingObserver{
       Repository.repository.fetch(IncomeTable.tableName, where: "${IncomeTable.columnDate}=?", whereArgs: [thisMonthsDate.millisecondsSinceEpoch]).then((maps){
         setState(() {
           incomes = Income.fromMaps(maps);
-          BlocProvider.of<MiddleNavBarCubit>(ExpensesPageBody.expensesScreenContext).emitInitial(MiddleNavBarOn.incomePage);
+          BlocProvider.of<MiddleNavBarCubit>(context).emitInitial(MiddleNavBarOn.incomePage);
         });
       });
     }
@@ -65,11 +64,9 @@ class _IncomeTiles extends State<IncomeTiles> with WidgetsBindingObserver{
     ),
   );
 
-  static BuildContext ctx;
-
   @override
   Widget build(BuildContext context) {
-    ctx = context;
+    
     return BlocBuilder<IncomeBloc, IncomeState>(
           builder: (context, state) {
             if (state is CurrentDateIncomes) {
@@ -87,11 +84,11 @@ class _IncomeTiles extends State<IncomeTiles> with WidgetsBindingObserver{
 
                 //TODO: This is a fix for a bug encountered that causes income added to be readded again 
                 //once a swipe is made off the page and back to the page. Find the problem, rather than this hack
-                if (incomes.isNotEmpty) incomes.removeWhere((income) { return
-                  income.amount == state.addedIncome.amount
-                  && income.date == state.addedIncome.date
-                  && income.source == state.addedIncome.source;} );
-                incomes.add(state.addedIncome);
+                // if (incomes.isNotEmpty) incomes.removeWhere((income) { return
+                //   income.amount == state.addedIncome.amount
+                //   && income.date == state.addedIncome.date
+                //   && income.source == state.addedIncome.source;} );
+                if(!incomes.contains(state.addedIncome)) incomes.add(state.addedIncome);
                 return _buildListView(incomes); 
               }
               else {
@@ -135,8 +132,12 @@ class _IncomeTiles extends State<IncomeTiles> with WidgetsBindingObserver{
   }
 
   void _delete(Income income) {
-    BlocProvider.of<IncomeBloc>(context).add(DeleteIncome(income.id));
-    BlocProvider.of<chart.ChartBloc>(context)
+    if(!income.date.isAtSameMomentAs(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))) return;
+    else {
+      Repository.repository.delete(tableName: IncomeTable.tableName, where: "${IncomeTable.columnId}=?", targetValues: [income.id]);
+      BlocProvider.of<chart.ChartBloc>(context)
         .add(chart.ModifyChart(chart.ChartName.income, null, income: income));
+      BlocProvider.of<IncomeBloc>(context).add(DeleteIncome(income.id));
+    }
   }
 }

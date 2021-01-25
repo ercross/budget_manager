@@ -33,6 +33,9 @@ class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObse
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _dateRange = ChartDataDateRange(
+        toDate: DateTime(todaysDate.year, todaysDate.month, todaysDate.day),
+        fromDate: DateTime(todaysDate.year, todaysDate.month-6));
     IncomeBarChart.dateRange = _dateRange;
     ChartData(_dateRange, ChartType.monthly).generateChartData().then((chartData) {
       setState (() => _chartData = chartData);
@@ -54,6 +57,13 @@ class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObse
           fromDate: DateTime(DateTime.now().year, DateTime.now().month-6),
       );
       IncomeBarChart.dateRange = _dateRange;
+      ChartData(_dateRange, ChartType.monthly).generateChartData().then((chartData) {
+      setState (() {
+        _chartData = chartData;
+        _buildChartBody();
+      });
+      BlocProvider.of<ChartBloc>(context).add(BuildNewChart(ChartName.income, chartData));
+    });
     }
   }
 
@@ -85,9 +95,9 @@ class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObse
                           "Last seven months incomes", textAlign: TextAlign.right,
                           style: TextStyle(
                             fontSize: 17,
-                            fontFamily: 'Roboto',
+                            fontFamily: 'OleoScript',
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            
                           ),
                         ))),
                 Expanded(
@@ -99,7 +109,7 @@ class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObse
   }
 
   Widget _decideOn(ChartState state) {
-
+    
     if (state is NewChartData && state.chartName == ChartName.income) {
       _dateRange = state.chartData.dateRange;
       this._chartData = state.chartData;
@@ -127,7 +137,7 @@ class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObse
         child: const Text("total",
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontFamily: "OleoScript",
             )),
       ),
       Expanded(
@@ -205,8 +215,7 @@ class _IncomeBarChartState extends State<IncomeBarChart> with WidgetsBindingObse
             showTitles: true,
             getTextStyles: (_) => TextStyle(
               color: Colors.white, 
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic),
+              fontFamily: "OleoScript"),
             margin: 20,
             getTitles: (double value) {
               switch (value.toInt()) {

@@ -4,14 +4,18 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
+import '../screens/budget_screen.dart';
+import '../repository/db_tables.dart';
+import '../repository/repository.dart';
+import '../models/week.dart';
 import '../cubit/budget/budget_cubit.dart';
 import '../models/budget.dart';
-import '../screens/expenses_screen.dart';
 
 class NewBudgetForm {
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _selectedDateContr = TextEditingController(text: "${DateTime.now()}");
-  DateTime _selectedDateF;
+  final TextEditingController _selectedDateContr = TextEditingController(
+    text: DateFormat("dd/MM/yyyy").format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)));
+  DateTime _selectedDateF = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   static final DateFormat dateFormat = DateFormat('MMM d, y');
 
 
@@ -19,29 +23,29 @@ class NewBudgetForm {
     switch (await showDialog<BudgetType>(
         context: context,
         builder: (bCtx) => SimpleDialog(
-              title: const Text("budget type"),
+              title: const Text("budget type", style: TextStyle(fontFamily: "OleoScript"),),
               contentPadding: EdgeInsets.all(10),
               children: [
                 SimpleDialogOption(
                     child: const Text("daily",
                         style:
-                            const TextStyle(color: Colors.black, fontSize: 13)),
+                            const TextStyle(color: Colors.black, fontSize: 13, fontFamily:"OleoScript")),
                     onPressed: () => Navigator.pop(context, BudgetType.daily)),
                 SimpleDialogOption(
                     child: const Text("weekly",
                         style:
-                            const TextStyle(color: Colors.black, fontSize: 13)),
+                            const TextStyle(color: Colors.black, fontSize: 13, fontFamily:"OleoScript")),
                     onPressed: () => Navigator.pop(context, BudgetType.weekly)),
                 SimpleDialogOption(
                     child: const Text("monthly",
                         style:
-                            const TextStyle(color: Colors.black, fontSize: 13)),
+                            const TextStyle(color: Colors.black, fontSize: 13, fontFamily:"OleoScript")),
                     onPressed: () =>
                         Navigator.pop(context, BudgetType.monthly)),
                 SimpleDialogOption(
-                    child: const Text("this year",
+                    child: const Text("yearly",
                         style:
-                            const TextStyle(color: Colors.black, fontSize: 13)),
+                            const TextStyle(color: Colors.black, fontSize: 13, fontFamily:"OleoScript")),
                     onPressed: () => Navigator.pop(context, BudgetType.yearly)),
               ],
             ))) {
@@ -55,7 +59,7 @@ class NewBudgetForm {
         _addMonthlyBudget(context);
         break;
       case BudgetType.yearly:
-        _addThisYearBudget(context);
+        _addYearlyBudget(context);
         break;
     }
   }
@@ -82,61 +86,6 @@ class NewBudgetForm {
             )));
   }
 
-  void _onPressedYearly(BuildContext context) {
-    final double amount =
-        double.parse(_amountController.text, //double.parse.onError
-            (value) {
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("$value is not a valid amount"),
-        duration: Duration(seconds: 4),
-      ));
-      return null;
-    });
-    if (amount == null) return;
-    BlocProvider.of<BudgetCubit>(context).add(Budget(
-      startDate: DateTime(DateTime.now().year, 1, 1),
-      endDate: DateTime(DateTime.now().year, 12, 31),
-      amount: amount,
-      type: BudgetType.yearly,
-    ));
-    Navigator.of(context).pop();
-  }
-
-  ///buildDateText builds a row containing a leading widget, usually a text Widget at the far left 
-  ///and a non-responsive TextField at the far right. 
-  ///@controller controls the text that would be displayed within the non-responsive textField
-  ///Note that controller.text must hold an instance of DateTime as toString at any point in time, else an error will be thrown
-  Widget _buildDateText(
-      {@required Widget leading, @required TextEditingController controller}) {
-        final String formattedDate = dateFormat.format(DateTime.parse(controller.text));
-        final TextEditingController fCtr = TextEditingController(text: formattedDate); 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            SizedBox(height: 25),
-            leading,
-          ],
-        ),
-        SizedBox(
-          width: 40,
-        ),
-        Flexible(
-          child: TextField(
-            controller: fCtr,
-            enableInteractiveSelection: false,
-            readOnly: false,
-            enabled: false,
-            textAlign: TextAlign.start,
-            style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFormContainer({BuildContext context, List<Widget> children}) {
     return Container(
         padding: EdgeInsetsDirectional.only(
@@ -148,7 +97,81 @@ class NewBudgetForm {
             children: children));
   }
 
-  void _addThisYearBudget(BuildContext context) {
+  int yearChosen = DateTime.now().year;
+  void _addYearlyBudget(BuildContext context) {
+    Alert(
+        title: "New Yearly Budget",
+        context: context,
+        closeIcon: Icon(Icons.close, color: Theme.of(context).accentColor),
+        buttons: [_buildAddButton(context, _onPressedYearly)],
+        content: _buildFormContainer(
+          context: context, 
+          children: [
+            _buildTextField("amount", _amountController),
+
+            Center(
+              child: DropdownButton<int>(
+                items: [
+                  DropdownMenuItem(child: Text("${DateTime.now().year}", 
+                                          style: TextStyle(fontSize: 14, color: Colors.black)), 
+                                  value: DateTime.now().year),
+
+                  DropdownMenuItem(child: Text("${DateTime.now().year+1}", 
+                                          style: TextStyle(fontSize: 14, color: Colors.black)), 
+                                  value: DateTime.now().year+1),
+                ],
+                hint: Text("choose year"),
+                autofocus: true,
+                iconSize: 24,
+                isExpanded: true,
+                value: yearChosen,
+                underline: Container(height: 2, color: Theme.of(context).primaryColor,),
+                elevation: 16,
+                icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).accentColor), 
+                onChanged: (_yearChosen) {
+                  yearChosen = _yearChosen;
+                },
+              ),
+            ),
+        ])).show();
+  }
+
+  void _onPressedYearly(BuildContext context) async {
+
+    final List<Map<String, dynamic>> map = await Repository.repository.fetch(BudgetTable.tableName, 
+      where: "${BudgetTable.columnTypeDate}=?", whereArgs: [yearChosen.toDouble()]);
+    if (map.isNotEmpty) {
+      Navigator.of(context).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("budget already added for year $yearChosen"),
+        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
+      ));
+      return;
+    }
+
+    final double amount =
+        double.parse(_amountController.text, //double.parse.onError
+            (value) {
+              Navigator.of(context).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("$value is not a valid amount"),
+        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
+      ));
+      return null;
+    });
+    if (amount == null || yearChosen == null ) return;
+    BlocProvider.of<BudgetCubit>(context).add(Budget(
+      dateNumber: 0,
+      typeDate: yearChosen.toDouble(),
+      amount: amount,
+      type: BudgetType.yearly,
+    ));
+    Navigator.of(context).pop();
+  }
+
+  int monthChosen = DateTime.now().month;
+  void _addMonthlyBudget(BuildContext context) {
+
     final List<DropdownMenuItem<int>> months = [
       DropdownMenuItem(child: Text("January", style: TextStyle(fontSize: 14, color: Colors.black)), value: DateTime.january),
       DropdownMenuItem(child: Text("February", style: TextStyle(fontSize: 14, color: Colors.black)), value: DateTime.february),
@@ -164,49 +187,6 @@ class NewBudgetForm {
       DropdownMenuItem(child: Text("December", style: TextStyle(fontSize: 14, color: Colors.black)), value: DateTime.december),
     ];
 
-    int chosenMonth = 1;
-    DateTime date = DateTime(DateTime.now().year, chosenMonth,);
-
-    Alert(
-        title: "This year budget",
-        context: context,
-        closeIcon: Icon(Icons.close, color: Theme.of(context).accentColor),
-        buttons: [_buildAddButton(context, _onPressedYearly)],
-        content: _buildFormContainer(
-          context: context, 
-          children: [
-            _buildTextField("amount", _amountController),
-
-            DropdownButton(
-              items: months,
-              hint: Text("choose month"),
-              autofocus: true,
-              iconSize: 24,
-              underline: Container(height: 2, color: Theme.of(context).primaryColor,),
-              elevation: 16,
-              icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).accentColor), 
-              onChanged: (month) {
-
-              },
-            ),
-        ])).show();
-  }
-
-  Widget _buildDateButton(BuildContext context, String buttonText) {
-    return GestureDetector(
-                      child: Text(buttonText,
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w600)),
-                      onTap: () => _showDatePicker(context));
-  }
-
-  void _addMonthlyBudget(BuildContext context) {
-
-    DateTime endDate = DateTime.parse(_selectedDateContr.text);
-    endDate = DateTime(endDate.year, endDate.month+1, endDate.day).subtract(Duration(days: 1));
-
     Alert(
       title: "New Monthly Budget",
       context: context,
@@ -214,119 +194,128 @@ class NewBudgetForm {
       content: _buildFormContainer(context: context, 
         children: [
           _buildTextField("amount", _amountController),
-          _buildDateText(
-            controller: _selectedDateContr,
-            leading: _buildDateButton(context, "start date"),
-          ),
-          _buildDateText(
-            controller: TextEditingController(text: "$endDate"),
-            leading: Text("end date", style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black87,
-                                  fontWeight: FontWeight.w600))
+          Center(
+            child: DropdownButton<int>(
+                items: months.sublist(DateTime.now().month-1),
+                hint: Text("choose month"),
+                autofocus: true,
+                iconSize: 24,
+                isExpanded: true,
+                value: monthChosen,
+                underline: Container(height: 2, color: Theme.of(context).primaryColor,),
+                elevation: 16,
+                icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).accentColor), 
+                onChanged: (_chosenMonth) {
+                  monthChosen = _chosenMonth;
+                },
+              ),
           ),
       ]),
     ).show();
   }
 
-  void _onPressedMonthlyBudget(BuildContext ctx) {
-    final DateTime endDate = DateTime(
-            _selectedDateF.year, _selectedDateF.month + 1, _selectedDateF.day)
-        .subtract(Duration(days: 1));
-    final double amount =
-        double.parse(_amountController.text, //double.parse.onError
-            (value) {
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("$value is not a valid amount"),
-        duration: Duration(seconds: 4),
-      ));
-      return null;
-    });
+  void _onPressedMonthlyBudget(BuildContext ctx) async {
 
-    if (amount == null || _selectedDateF == null) return;
-
-    if (_selectedDateF.day.compareTo(1) != 0) {
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("Month must start on the 1st"),
-        duration: Duration(seconds: 7),
+    final List<Map<String, dynamic>> map = await Repository.repository.fetch(BudgetTable.tableName, 
+      where: "${BudgetTable.columnTypeDate}=?", whereArgs: [double.parse("${DateTime.now().year}.$monthChosen")]);
+    if (map.isNotEmpty) {
+      Navigator.of(ctx).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("budget already added for "
+            + "${DateFormat("MMMM yyyy").format(DateTime(DateTime.now().year, monthChosen))}"),
+        backgroundColor: Theme.of(ctx).primaryColor.withOpacity(0.5),
       ));
       return;
     }
 
+    final double amount =
+        double.parse(_amountController.text, //double.parse.onError
+            (value) {
+              Navigator.of(ctx).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("$value is not a valid amount"),
+        backgroundColor: Theme.of(ctx).primaryColor.withOpacity(0.5),
+      ));
+      return null;
+    });
+
+    if (amount == null || monthChosen == null) return;
+
     BlocProvider.of<BudgetCubit>(ctx).add(Budget(
-        startDate: _selectedDateF,
-        endDate: endDate,
+        typeDate: double.parse("${DateTime.now().year}.$monthChosen"),
+        dateNumber: 0,
         amount: amount,
         type: BudgetType.monthly));
     Navigator.of(ctx).pop();
   }
 
-  Widget _addWeeklyBudget(BuildContext context) {
-    return Container(
-        padding: EdgeInsetsDirectional.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 15, //start: 10,
-        ),
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildTextField("amount", _amountController),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                      child: Text("start date",
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w600)),
-                      onTap: () => _showDatePicker(context)),
-                  SizedBox(
-                      width: 100,
-                      height: 70,
-                      child: TextField(
-                          controller: _selectedDateContr,
-                          readOnly: true,
-                          style: TextStyle(fontSize: 13, color: Colors.grey)))
-                ],
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: RaisedButton(
-                    elevation: 8,
-                    child: Text("Add Budget"),
-                    textColor: Theme.of(context).primaryColor,
-                    onPressed: () {
-                      _onPressedWeeklyBudget(context);
-                    }),
-              )
-            ]));
+  Week weekChosen;
+  void _addWeeklyBudget(BuildContext context) {
+    final DateFormat f = DateFormat("EEE d MMM, yyyy");
+    final List<Week> weeks = Weeks(inYear: Year(DateTime.now().year)).calculateWeeks();
+    final Week currentWeek = Weeks(inYear: Year(DateTime.now().year)).getWeekByDate(DateTime.now());
+    weekChosen = currentWeek;
+    final List<DropdownMenuItem<Week>> buttonWeeks = List<DropdownMenuItem<Week>>();
+    weeks.forEach((week) => buttonWeeks.add(DropdownMenuItem(
+      child: Text("Week ${week.number} starts on: ${f.format(week.starts)}", 
+        style: TextStyle(fontSize: 14, color: Colors.black),),
+      value: week,)));
+
+    Alert(
+      title: "New Weekly Budget",
+      context: context,
+      buttons: [_buildAddButton(context, _onPressedWeeklyBudget)],
+      content: _buildFormContainer(context: context,
+        children: [
+          _buildTextField("amount", _amountController),
+          Center(child: DropdownButton<Week>(
+            items: buttonWeeks.sublist(currentWeek.number-1),
+            hint: Text("choose week"),
+                autofocus: true,
+                iconSize: 24,
+                underline: Container(height: 2, color: Theme.of(context).primaryColor,),
+                elevation: 16,
+                isExpanded: true,
+                value: weeks[weekChosen.number-1],
+                icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).accentColor), 
+                onChanged: (_chosenWeek) {
+                  weekChosen = _chosenWeek;
+                },
+          ))
+        ])
+    ).show();
   }
 
-  void _onPressedWeeklyBudget(BuildContext ctx) {
-    final double amount =
-        double.parse(_amountController.text, //double.parse.onError
-            (value) {
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("$value is not a valid amount"),
-        duration: Duration(seconds: 4),
-      ));
-      return null;
-    });
+  void _onPressedWeeklyBudget(BuildContext ctx) async {
 
-    if (amount == null || _selectedDateF == null) return;
-
-    if (_selectedDateF.weekday.compareTo(DateTime.monday) != 0) {
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
-        content: Text("Week must start on Monday"),
-        duration: Duration(seconds: 7),
+    final List<Map<String, dynamic>> map = await Repository.repository.fetch(BudgetTable.tableName, 
+      where: "${BudgetTable.columnTypeDate}=?", 
+      whereArgs: [double.parse("${DateTime.now().year}.${DateTime.now().month}${weekChosen.number}")]);
+    if (map.isNotEmpty) {
+      Navigator.of(ctx).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("budget already added for week $weekChosen"),
+        backgroundColor: Theme.of(ctx).primaryColor.withOpacity(0.5),
       ));
       return;
     }
 
+    final double amount =
+        double.parse(_amountController.text, //double.parse.onError
+            (value) {
+              Navigator.of(ctx).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("$value is not a valid amount"),
+        backgroundColor: Theme.of(ctx).primaryColor.withOpacity(0.5),
+      ));
+      return null;
+    });
+
+    if (amount == null || weekChosen == null) return;
+
     BlocProvider.of<BudgetCubit>(ctx).add(Budget(
-        startDate: _selectedDateF,
-        endDate: _selectedDateF.add(Duration(days: 6)),
+        dateNumber: weekChosen.number,
+        typeDate: double.parse("${DateTime.now().year}.${DateTime.now().month}$weekChosen"),
         amount: amount,
         type: BudgetType.weekly));
     Navigator.of(ctx).pop();
@@ -336,15 +325,9 @@ class NewBudgetForm {
     Alert(
         title: "New Budget",
         context: context,
-        content: Container(
-            padding: EdgeInsetsDirectional.only(
-              bottom:
-                  MediaQuery.of(context).viewInsets.bottom + 15, //start: 10,
-            ),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
+        buttons: [_buildAddButton(context, _onPressedDailyBudget)],
+        content: _buildFormContainer(context: context, 
+          children: [
                   _buildTextField("amount", _amountController),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -366,26 +349,28 @@ class NewBudgetForm {
                                   TextStyle(fontSize: 13, color: Colors.grey)))
                     ],
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: RaisedButton(
-                        elevation: 8,
-                        child: Text("Add Budget"),
-                        textColor: Theme.of(context).primaryColor,
-                        onPressed: () {
-                          _onPressedDailyBudget(context);
-                        }),
-                  )
-                ]))).show();
+          ]),
+        ).show();
   }
 
-  void _onPressedDailyBudget(BuildContext context) {
+  void _onPressedDailyBudget(BuildContext context) async {
+    final List<Map<String, dynamic>> map = await Repository.repository.fetch(BudgetTable.tableName, 
+      where: "${BudgetTable.columnDateNumber}=?", whereArgs: [_selectedDateF.millisecondsSinceEpoch]);
+    if (map.isNotEmpty) {
+      Navigator.of(context).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
+        content: Text("budget already added for ${DateFormat("dd/MM/yyyy").format(_selectedDateF)}"),
+        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
+      ));
+      return;
+    }
     final double amount =
         double.parse(_amountController.text, //double.parse.onError
             (value) {
-      Scaffold.of(ExpensesPageBody.expensesScreenContext).showSnackBar(SnackBar(
+              Navigator.of(context).pop();
+      Scaffold.of(BudgetsPage.ctx).showSnackBar(SnackBar(
         content: Text("$value is not a valid amount"),
-        duration: Duration(seconds: 4),
+        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
       ));
       return null;
     });
@@ -393,8 +378,8 @@ class NewBudgetForm {
     if (amount == null || _selectedDateF == null) return;
 
     BlocProvider.of<BudgetCubit>(context).add(Budget(
-        startDate: _selectedDateF,
-        endDate: _selectedDateF,
+        dateNumber: _selectedDateF.millisecondsSinceEpoch,
+        typeDate: 0,
         amount: amount,
         type: BudgetType.daily));
     Navigator.of(context).pop();
@@ -404,7 +389,8 @@ class NewBudgetForm {
     DatePicker.showDatePicker(context,
         showTitleActions: true,
         currentTime: DateTime.now(),
-        maxTime: DateTime.now(), onConfirm: (selectedDateF) {
+        minTime: DateTime.now(), 
+        onConfirm: (selectedDateF) {
       selectedDateF =
           DateTime(selectedDateF.year, selectedDateF.month, selectedDateF.day);
       _selectedDateF = selectedDateF;

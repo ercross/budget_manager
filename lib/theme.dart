@@ -33,15 +33,19 @@ class BudgetManagerTheme {
   ThemeData makeTheme () {
     return ThemeData(
       primarySwatch: _primarySwatch,
+      appBarTheme: AppBarTheme(textTheme: TextTheme(headline6:TextStyle(
+            color: Colors.green,
+            fontSize: 18,
+            fontFamily: 'Pacifico'
+          ),)),
       accentColor: Colors.green,
         textTheme: ThemeData.light().textTheme.copyWith(
           bodyText2: TextStyle(
             color: Colors.green,
             fontSize: 16,
-            fontFamily: 'OpenSans'
-          )
-        ),
-        
+            fontFamily: 'FugazOne'
+          ), 
+        )
     );
   }
 }
